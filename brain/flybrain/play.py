@@ -117,10 +117,19 @@ def play_games(
     max_frames: int = MAX_FRAMES,
     on_result: Callable[[GameResult], None] | None = None,
     on_frame: Callable[[int, list], None] | None = None,
+    learner=None,
 ) -> list[GameResult]:
-    """Play every seed once. `drive` must drive [LC4 neurons…, LPLC2 neurons…] in that order; `gf_watch` = GF indices."""
+    """Play every seed once. `drive` must drive [LC4 neurons…, LPLC2 neurons…] in that order; `gf_watch` = GF indices.
+
+    With a `learner` (flybrain.learn.Learner) the drive continues with [context VPNs…, PAM…, PPL1…], the learner sees
+    the per-frame spike counts of its watched neurons, is told about cleared obstacles and crashes, and a crashed game
+    stays in its column for a short "punishment tail" during which only dopaminergic neurons are driven.
+    """
     motor = motor or MotorParams()
     b = net.b
+    watch = gf_watch if learner is None else np.concatenate([gf_watch, learner.watch])
+    n_watch_gf = len(gf_watch)
+    tails: dict[int, int] = {}
     steps_per_frame = round(bio_ms_per_frame / net.params.dt_ms)
     queue = list(seeds)
     games: list[_Game | None] = [None] * b
@@ -133,6 +142,8 @@ def play_games(
         seed = queue.pop(0)
         games[col] = _Game(seed, noise_seed, motor)
         net.reset(columns=np.array([col]))
+        if learner is not None:
+            learner.start_game(col)
         drive.set_seeds(np.array([stream_key(noise_seed, seed)], dtype=np.uint64), columns=np.array([col]))
 
     net.reset()
@@ -151,14 +162,32 @@ def play_games(
                 continue
             view = obstacle_view(g.state, bio_ms_per_frame)
             views.append(view)
+            if col in tails:  # punishment tail: the game is over, the senses are off, only dopamine is delivered
+                lc4_rate[col] = lplc2_rate[col] = 0.0
+                continue
             lc4, lplc2 = population_rates(view.theta_deg, view.theta_dot_deg_s, looming)
             lc4_rate[col], lplc2_rate[col] = float(lc4), float(lplc2)
-        drive.set_rates(np.concatenate([np.tile(lc4_rate, (n_lc4, 1)), np.tile(lplc2_rate, (n_lplc2, 1))], axis=0))
-        res = net.run(steps_per_frame, record=None, watch=gf_watch)
-        gf = res.watch_counts.sum(axis=0)
+        rates = [np.tile(lc4_rate, (n_lc4, 1)), np.tile(lplc2_rate, (n_lplc2, 1))]
+        if learner is not None:
+            rates.append(learner.extra_rates(games, views, tails))
+        drive.set_rates(np.concatenate(rates, axis=0))
+        res = net.run(steps_per_frame, record=None, watch=watch)
+        gf = res.watch_counts[:n_watch_gf].sum(axis=0)
+        if learner is not None:
+            learner.frame(res.watch_counts[n_watch_gf:])
 
         for col, g in enumerate(games):
             if g is None:
+                continue
+            if col in tails:
+                tails[col] -= 1
+                if tails[col] <= 0:
+                    del tails[col]
+                    result = g.result(max_frames)
+                    results.append(result)
+                    if on_result is not None:
+                        on_result(result)
+                    start(col)
                 continue
             view, s = views[col], g.state
             n_gf = int(gf[col])
@@ -199,6 +228,12 @@ def play_games(
                 g.actions.append((s.frame, bits))
                 g.bits = bits
             g.state = dc.step(s, g.jump_key, False)
+            if learner is not None:
+                if g.state.cleared > s.cleared:
+                    learner.on_cleared(col, g.current[1] if g.current is not None else None)
+                if g.state.crashed:
+                    tails[col] = learner.on_crash(col)
+                    continue
 
             if g.state.crashed or g.state.frame >= max_frames:
                 result = g.result(max_frames)

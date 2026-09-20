@@ -197,6 +197,20 @@ class _Views:
         self.spk = net._spk_buf[:, :cap]
 
 
+class _Plastic:
+    """Book-keeping of the plastic synapse group (see LIFNetwork.set_plastic)."""
+
+    edge_idx: np.ndarray
+    plastic_id: torch.Tensor  # [E] → index into gains, -1 for frozen edges
+    n_post: int
+    post_pos: torch.Tensor  # [P] position of each plastic edge's target within post_neurons
+    post_neurons: torch.Tensor
+    post_slots: torch.Tensor
+    gains: torch.Tensor  # [P]
+    ring: torch.Tensor  # [L, n_post, B] float
+    inp: torch.Tensor
+
+
 class LIFNetwork:
     def __init__(
         self,
@@ -275,6 +289,7 @@ class LIFNetwork:
         self._stim_neurons: torch.Tensor | None = None
         self._stim_slots: torch.Tensor | None = None
         self._kick_buf: torch.Tensor | None = None
+        self._plastic: _Plastic | None = None
         self._graphs: dict[int, torch.cuda.CUDAGraph] = {}
         self._init_active_set()
 
@@ -288,10 +303,15 @@ class LIFNetwork:
         self._n_act = 0
         if not self.active_set:
             self._activate(torch.arange(self.n, device=self.device))
-        elif self._stim_neurons is not None:
-            self._activate(self._stim_neurons)
         else:
+            if self._stim_neurons is not None:
+                self._activate(self._stim_neurons)
+            if self._plastic is not None:
+                post = self._plastic.post_neurons
+                self._activate(post[self._slot_of[post] < 0])
             self._set_capacity()
+        if self._plastic is not None:
+            self._plastic.post_slots = self._slot_of[self._plastic.post_neurons]
 
     def _activate(self, neurons: torch.Tensor) -> None:
         """Give slots to `neurons` (unique, all currently without a slot). Their state rows are at rest (zero)."""
@@ -341,6 +361,37 @@ class LIFNetwork:
         self._kick_buf = torch.zeros(self.k, len(drive.neuron_idx), self.b, dtype=torch.bool, device=self.device)
         self._refresh_slot_params()
 
+    def set_plastic(self, edge_mask: np.ndarray | None, gains: torch.Tensor | None = None) -> torch.Tensor | None:
+        """Make the masked edges plastic: their weight becomes w0 · gain (gain tensor shared by all columns).
+
+        Plastic input travels through a small float ring buffer that only covers the postsynaptic neurons of the
+        plastic edges (the MBONs). With all gains = 1 the result is identical to the frozen network. Returns the
+        gain tensor [n_plastic] (float, on device) so that a learning rule can update it in place.
+        """
+        self._graphs.clear()
+        if edge_mask is None:
+            self._plastic = None
+            return None
+        edge_idx = np.flatnonzero(np.asarray(edge_mask, dtype=bool))
+        post_neurons = np.unique(self.conn.post[edge_idx]).astype(np.int64)
+        dev = self.device
+        plastic_id = torch.full((self.conn.n_edges,), -1, dtype=torch.int64, device=dev)
+        plastic_id[torch.as_tensor(edge_idx, device=dev)] = torch.arange(len(edge_idx), device=dev)
+        post_t = torch.as_tensor(post_neurons, device=dev)
+        self._activate(post_t[self._slot_of[post_t] < 0])
+        pl = _Plastic()
+        pl.edge_idx = edge_idx
+        pl.plastic_id = plastic_id
+        pl.n_post = len(post_neurons)
+        pl.post_pos = torch.as_tensor(np.searchsorted(post_neurons, self.conn.post[edge_idx]), device=dev)
+        pl.post_neurons = post_t
+        pl.post_slots = self._slot_of[post_t]
+        pl.gains = torch.ones(len(edge_idx), dtype=self.dtype, device=dev) if gains is None else gains.to(dev, self.dtype)
+        pl.ring = torch.zeros(self.ring_len, pl.n_post, self.b, dtype=self.dtype, device=dev)
+        pl.inp = torch.zeros(1, pl.n_post, self.b, dtype=self.dtype, device=dev)
+        self._plastic = pl
+        return pl.gains
+
     def ablate(self, neuron_idx: np.ndarray | None) -> None:
         """Neurons that cannot spike (Kir2.1-like silencing). `None` clears the ablation."""
         self._can_spike_n.fill_(True)
@@ -356,6 +407,8 @@ class LIFNetwork:
             self.g.zero_()
             self._refr_until.zero_()
             self._ring.zero_()
+            if self._plastic is not None:
+                self._plastic.ring.zero_()
             self.spike_counts.zero_()
             self._col_start.fill_(self.step)
             self._init_active_set()  # shrink back to the driven neurons
@@ -371,6 +424,8 @@ class LIFNetwork:
         self.g[:cap, cols] = 0
         self._refr_until[:cap, cols] = 0
         self._ring[:, :cap, cols] = 0
+        if self._plastic is not None:
+            self._plastic.ring[:, :, cols] = 0
         self.spike_counts[:, cols] = 0
         self._col_start[cols] = self.step
 
@@ -397,6 +452,11 @@ class LIFNetwork:
         tmp.copy_(v.inp[0])
         tmp.mul_(self._w_syn)
         g.add_(tmp)
+        if self._plastic is not None:  # float path for the (few) plastic synapses: KC→MBON
+            pl = self._plastic
+            torch.index_select(pl.ring, 0, self._slot, out=pl.inp)
+            pl.ring.index_fill_(0, self._slot, 0.0)
+            g.index_add_(0, pl.post_slots, pl.inp[0].mul(nr.index_select(0, pl.post_slots)).mul_(self._w_syn))
         if self._stim_slots is not None:
             live = self._kick_buf[k] & nr.index_select(0, self._stim_slots)
             u.index_add_(0, self._stim_slots, live.to(self.dtype).mul_(self._kick_mv))
@@ -487,8 +547,19 @@ class LIFNetwork:
                     self._activate(torch.unique(targets[untouched]))
                     tslot = self._slot_of[targets]
             ring_slot = (step0 + kk[lo:hi][rep] + self.delay) % self.ring_len
-            flat = (ring_slot * self.n + tslot) * self.b + bb[lo:hi][rep]
-            ring_flat.index_add_(0, flat, self._out_w[edge])
+            cols = bb[lo:hi][rep]
+            weights = self._out_w[edge]
+            if self._plastic is not None:
+                pl = self._plastic
+                pid = pl.plastic_id[edge]
+                is_pl = pid >= 0
+                if bool(is_pl.any()):
+                    pe = pid[is_pl]
+                    flat_f = (ring_slot[is_pl] * pl.n_post + pl.post_pos[pe]) * self.b + cols[is_pl]
+                    pl.ring.view(-1).index_add_(0, flat_f, weights[is_pl].to(self.dtype) * pl.gains[pe])
+                    weights = weights.masked_fill(is_pl, 0)
+            flat = (ring_slot * self.n + tslot) * self.b + cols
+            ring_flat.index_add_(0, flat, weights)
 
     # ------------------------------------------------------------------ running
     @torch.no_grad()

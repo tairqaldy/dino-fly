@@ -284,6 +284,12 @@ def synthetic(n: int = 1000, seed: int = 0) -> Connectome:
         "LC4": np.arange(92, 112),
         "SYN_LCINH": np.arange(112, 122),
         "DNp01": np.arange(122, 124),
+        # a miniature mushroom body: visual neurons → Kenyon cells → MBONs → Giant Fiber, plus dopaminergic neurons
+        "aMe12": np.arange(124, 142),
+        "KCg": np.arange(142, 202),
+        "MBON01": np.arange(202, 208),
+        "PAM01": np.arange(208, 216),
+        "PPL101": np.arange(216, 220),
     }
     planted = np.concatenate(list(groups.values()))
     inhibitory = rng.random(n) < 0.3
@@ -311,16 +317,21 @@ def synthetic(n: int = 1000, seed: int = 0) -> Connectome:
     strong = rng.integers(15, 61, size=bg_pre.size)
     cnt_l.append(np.where(rng.random(bg_pre.size) < 0.15, strong, weak))
     # the planted interneurons and outputs also broadcast into the background
-    connect(groups["SYN_IN"], np.arange(124, n), 0.03, 20, 60)
-    connect(groups["DNp01"], np.arange(124, n), 0.05, 20, 60)
+    connect(groups["SYN_IN"], np.arange(220, n), 0.03, 20, 60)
+    connect(groups["DNp01"], np.arange(220, n), 0.05, 20, 60)
 
     connect(groups["SYN_GRN"], groups["SYN_IN"], 0.5, 4, 14)
     connect(groups["SYN_IN"], groups["SYN_MN9"], 0.6, 3, 10)
     connect(groups["SYN_GRN"], groups["SYN_MN9"], 0.3, 1, 4)
-    connect(groups["LPLC2"], groups["DNp01"], 0.9, 2, 8)
-    connect(groups["LC4"], groups["DNp01"], 0.9, 4, 12)
+    connect(groups["LPLC2"], groups["DNp01"], 0.9, 8, 16)
+    connect(groups["LC4"], groups["DNp01"], 0.9, 8, 16)
     connect(groups["LC4"], groups["SYN_LCINH"], 0.5, 3, 9)
     connect(groups["SYN_LCINH"], groups["DNp01"], 0.8, 5, 40)  # strong negative weights
+    connect(groups["aMe12"], groups["KCg"], 0.35, 10, 25)
+    connect(groups["KCg"], groups["MBON01"], 0.6, 3, 10)
+    connect(groups["PAM01"], groups["MBON01"][:3], 0.8, 5, 15)  # "reward" compartment
+    connect(groups["PPL101"], groups["MBON01"][3:], 0.8, 5, 15)  # "punishment" compartment
+    connect(groups["MBON01"], groups["DNp01"], 1.0, 10, 25)
 
     # autapses and explicit duplicate edges (the engine must sum duplicates and drop autapse input correctly)
     auto = rng.choice(n, size=12, replace=False)
@@ -345,8 +356,12 @@ def synthetic(n: int = 1000, seed: int = 0) -> Connectome:
     annotations = pd.DataFrame(
         {
             "root_id": pd.array(root_ids, dtype="Int64"),
-            "super_class": np.where(np.isin(np.arange(n), groups["DNp01"]), "descending", "central"),
-            "cell_class": "",
+            "super_class": np.select(
+                [np.isin(np.arange(n), groups["DNp01"]), np.isin(cell_type, ["aMe12", "LPLC2", "LC4"])],
+                ["descending", "visual_projection"],
+                "central",
+            ),
+            "cell_class": np.where(cell_type == "KCg", "Kenyon_Cell", ""),
             "cell_type": cell_type,
             "hemibrain_type": np.where(cell_type == "DNp01", "Giant Fiber", ""),
             "side": side,
