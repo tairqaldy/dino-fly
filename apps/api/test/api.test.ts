@@ -121,6 +121,8 @@ describe("HTTP API", () => {
     expect(await res.json()).toMatchObject({ accepted: true, score: run.score, rank: 1 }); // the claimed 999999 is ignored
     expect(deps.changed).toBe(1);
     expect((await app.request("/api/runs", { method: "POST", body })).status).toBe(409);
+    const exported = (await (await app.request("/api/runs/human?limit=10")).json()) as { runs: { seed: number; actions: unknown }[] };
+    expect(exported.runs).toEqual([{ seed: started.seed, score: run.score, frames: run.frames, actions: run.actions }]);
     const lb = (await (await app.request("/api/leaderboard")).json()) as { humans: unknown[] };
     expect(lb.humans).toEqual([{ name: "tair", score: run.score }]);
     expect((await (await app.request("/health")).json()) as object).toEqual({ ok: true, flyOnline: false });

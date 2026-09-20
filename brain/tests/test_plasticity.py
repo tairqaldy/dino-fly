@@ -11,8 +11,8 @@ from flybrain import neurons
 from flybrain.connectome import Connectome
 from flybrain.learn import Learner
 from flybrain.lif import LIFNetwork, LIFParams, PoissonDrive
-from flybrain.play import play_games
 from flybrain.plasticity import KcMbonPlasticity, PlasticityParams
+from flybrain.play import play_games
 from flybrain.transducer.context import context_index, context_rates, group_of, kc_projecting_vpns
 from flybrain.transducer.dopamine import DopamineChannel, DopamineParams, timing_magnitude
 from flybrain.transducer.looming import LoomingParams

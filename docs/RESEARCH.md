@@ -138,3 +138,33 @@ Source: `results/looming_gf.json`.
 <!-- BEGIN:naive_play -->
 not yet measured
 <!-- END:naive_play -->
+
+## Phase 4 — Can the mushroom body reach the escape circuit?
+
+**Question.** KC→MBON plasticity can only matter for the game if MBON activity influences the Giant Fiber through
+the real wiring. Does it, in this model?
+
+<!-- BEGIN:mbon_influence -->
+not yet measured
+<!-- END:mbon_influence -->
+
+## Phase 4 — Does the fly learn?
+
+**Hypothesis H1.** Dopamine-gated depression of KC→MBON synapses (reward = cleared obstacle → PAM, punishment = crash →
+PPL1), with a coarse visual context delivered to Kenyon cells, improves the held-out score over generations.
+**What would falsify it:** no improvement beyond the shuffled-dopamine and random-plasticity ablations on the same
+held-out seeds. A null result is reported as such.
+
+<!-- BEGIN:learning -->
+not yet measured
+<!-- END:learning -->
+
+## Phase 5 — Does teaching by humans help?
+
+Two mechanisms are implemented (`flybrain/crowd.py`): observational replay of stored human runs with dopamine as
+the only teaching signal, and a curriculum of seeds on which many humans die. Both need validated human runs from
+the public leaderboard.
+
+<!-- BEGIN:crowd_teaching -->
+not yet measured
+<!-- END:crowd_teaching -->

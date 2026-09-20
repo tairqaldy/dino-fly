@@ -79,6 +79,18 @@ export function createApp(deps: Deps): Hono {
 
   app.get("/api/leaderboard", async (c) => c.json(await leaderboard(deps)));
 
+  // Export for crowd teaching (brain/experiments/crowd_teaching.py): validated human runs with their action logs.
+  app.get("/api/runs/human", async (c) => {
+    const limit = Math.min(Math.max(Number(c.req.query("limit") ?? 500) || 500, 1), 5000);
+    const rows = await deps.repo.listHumanRuns(limit);
+    const out = [];
+    for (const r of rows) {
+      const blob = await deps.blobs.get(r.actionLogKey);
+      if (blob) out.push({ seed: r.seed, score: r.score, frames: r.frames, actions: (JSON.parse(blob) as { actions: unknown }).actions });
+    }
+    return c.json({ runs: out });
+  });
+
   app.get("/api/ghost", async (c) => {
     const seedParam = c.req.query("seed");
     const seed = seedParam === undefined ? undefined : Number(seedParam);

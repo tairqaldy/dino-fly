@@ -32,6 +32,8 @@ export interface Repo {
   flyBestPerGeneration(): Promise<{ generation: number; bestScore: number }[]>;
   bestFlyRun(seed?: number): Promise<{ seed: number; generation: number; score: number; actionLogKey: string } | null>;
   humanRank(score: number): Promise<number>;
+  /** Validated human runs (newest first) for crowd teaching: metadata only, the action log is fetched by key. */
+  listHumanRuns(limit: number): Promise<{ seed: number; score: number; frames: number; actionLogKey: string }[]>;
   recordDopamine(e: { kind: "reward" | "punish"; magnitude: number; source: "game" | "human_button" | "hardware"; seed?: number; frame?: number }): Promise<void>;
   touchDevice(deviceId: string, kind: string, firmware?: string): Promise<void>;
 }
@@ -127,6 +129,13 @@ export class MemoryRepo implements Repo {
   async humanRank(score: number) {
     return 1 + this.runs.filter((r) => r.agentType === "human" && r.validated && r.score > score).length;
   }
+  async listHumanRuns(limit: number) {
+    return this.runs
+      .filter((r) => r.agentType === "human" && r.validated)
+      .slice(-limit)
+      .reverse()
+      .map((r) => ({ seed: r.seed, score: r.score, frames: r.frames, actionLogKey: r.actionLogKey }));
+  }
   async recordDopamine(e: unknown) {
     this.dopamine.push(e);
   }
@@ -217,6 +226,15 @@ export class PgRepo implements Repo {
       .from(runs)
       .where(and(eq(runs.agentType, "human"), eq(runs.validated, true), sql`${runs.score} > ${score}`));
     return 1 + (row?.n ?? 0);
+  }
+
+  async listHumanRuns(limit: number) {
+    return this.db
+      .select({ seed: runs.seed, score: runs.score, frames: runs.durationFrames, actionLogKey: runs.actionLogUrl })
+      .from(runs)
+      .where(and(eq(runs.agentType, "human"), eq(runs.validated, true)))
+      .orderBy(desc(runs.id))
+      .limit(limit);
   }
 
   async recordDopamine(e: { kind: "reward" | "punish"; magnitude: number; source: "game" | "human_button" | "hardware"; seed?: number; frame?: number }) {
