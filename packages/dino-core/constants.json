@@ -1,0 +1,80 @@
+{
+  "engineVersion": 1,
+  "fp": 1000,
+  "world": { "width": 600, "height": 150 },
+  "clearFrames": 180,
+  "speed": { "initial": 6000, "max": 13000, "accelPerFrame": 1 },
+  "distancePerPoint": 40000,
+  "gap": { "coefficientMilli": 600, "maxNumerator": 3, "maxDenominator": 2 },
+  "maxObstacleLength": 3,
+  "maxObstacleDuplication": 2,
+  "dino": {
+    "x": 50,
+    "width": 44,
+    "height": 47,
+    "duckWidth": 59,
+    "duckHeight": 25,
+    "gravity": 600,
+    "jumpVelocityBase": 10000,
+    "jumpVelocitySpeedDivisor": 10,
+    "minJumpHeight": 30000,
+    "maxJumpHeight": 63000,
+    "dropVelocity": 5000,
+    "speedDropCoefficient": 3,
+    "speedDropVelocity": -1000,
+    "boxes": [
+      [22, 31, 20, 16],
+      [8, 12, 26, 20],
+      [0, 18, 10, 10],
+      [12, 0, 14, 12]
+    ],
+    "duckBoxes": [[1, 0, 56, 24]]
+  },
+  "obstacles": [
+    {
+      "name": "CACTUS_SMALL",
+      "width": 17,
+      "height": 35,
+      "yBottoms": [0],
+      "minGap": 120,
+      "minSpeed": 0,
+      "multipleSpeed": 4000,
+      "speedOffset": 0,
+      "boxes": [
+        [0, 12, 5, 16],
+        [5, 0, 7, 35],
+        [12, 14, 5, 14]
+      ]
+    },
+    {
+      "name": "CACTUS_LARGE",
+      "width": 25,
+      "height": 50,
+      "yBottoms": [0],
+      "minGap": 120,
+      "minSpeed": 0,
+      "multipleSpeed": 7000,
+      "speedOffset": 0,
+      "boxes": [
+        [0, 14, 7, 24],
+        [7, 0, 11, 50],
+        [18, 16, 7, 22]
+      ]
+    },
+    {
+      "name": "PTERODACTYL",
+      "width": 46,
+      "height": 40,
+      "yBottoms": [0, 25, 50],
+      "minGap": 150,
+      "minSpeed": 8500,
+      "multipleSpeed": 999000,
+      "speedOffset": 800,
+      "boxes": [
+        [2, 12, 42, 14],
+        [14, 4, 20, 8],
+        [14, 26, 20, 10]
+      ]
+    }
+  ]
+}
