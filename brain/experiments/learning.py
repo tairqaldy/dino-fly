@@ -13,8 +13,9 @@ Protocol — fixed before any held-out game (git tag `prereg-phase4-<hypothesis>
     plasticity ON (obstacle cleared → PAM burst scaled by jump timing; crash → PPL1 burst; visual context as fixed by
     `experiments/mb_drive.py`). Evaluation is with plasticity OFF on HELDOUT_100 — same seeds, same Poisson noise,
     every time — before training, after generations 1 and 3 and after the last one (compute budget: one night).
-  * conditions: normal | shuffled_da (as many bursts, at random moments, random sign; evaluated after the last
-    generation) | random_plasticity (final gains of `normal`, randomly re-assigned to synapses) | no_da (no dopamine:
+  * conditions: normal | shuffled_da (reward bursts at random moments — about as many as the naive fly earns, random
+    magnitude — instead of after a cleared obstacle; punishments stay after the crash, because a PPL1 burst inside a
+    running game ignites Kenyon-cell volleys in this model; evaluated after the last generation) | random_plasticity (final gains of `normal`, randomly re-assigned to synapses) | no_da (no dopamine:
     gains must stay exactly 1, which makes it identical to generation 0 — asserted, not re-played).
   * primary endpoint: held-out score, last generation vs. generation 0, paired by seed (bootstrap CI, Wilcoxon).
     "Learning" is claimed only if that difference is positive with a CI excluding 0 AND the last generation also beats
@@ -220,7 +221,8 @@ def main() -> int:
         result["h2"] = {"naive_mbon_hz_avoidance_approach_per_context": h2["naive_mbon_hz"].tolist(),
                         "n_avoidance_mbons": int((h2["mbon_valence"] > 0).sum()), "n_approach_mbons": int((h2["mbon_valence"] < 0).sum())}
     final_gains = None
-    for cond in ("normal", "shuffled_da"):
+    # the pilot measures how fast synapses change in the normal condition, nothing else: it never plays an evaluation game
+    for cond in ("normal",) if args.pilot else ("normal", "shuffled_da"):
         net, drive, learner = build("normal" if cond == "normal" else "shuffled")
         result.setdefault("plasticity", learner.describe())
         curve = []
@@ -233,8 +235,7 @@ def main() -> int:
             entry = {"generation": gen, **gain_stats(gains), "rewards_so_far": learner.rewards, "punishments_so_far": learner.punishments,
                      "shuffled_bursts_so_far": learner.shuffled_bursts, "spike_totals_so_far": dict(learner.spike_totals)}
             # shuffled_da: generation 0 is the same brain as normal generation 0; only its last generation is evaluated
-            # (the pilot only needs the synaptic statistics of `normal`, so it skips the other evaluations)
-            if (cond == "normal" and evaluated(gen, generations)) or (gen == generations and not args.pilot):
+            if not args.pilot and ((cond == "normal" and evaluated(gen, generations)) or gen == generations):
                 entry["heldout"] = evaluate(net, drive, learner)
             np.savez_compressed(checkpoint_dir(name) / f"{cond}_gen{gen:02d}.npz", **learner.rule.state())
             entry["wall_s"] = time.time() - t0
@@ -252,24 +253,26 @@ def main() -> int:
         del net, drive, learner
         torch.cuda.empty_cache()
 
+    if args.pilot:
+        write_result(name, result)
+        print(f"[pilot] η₀ = {PILOT_ETA0:g} → calibrated η = {calibrated_eta(load_result(name)):g} for {GAMES_PER_GEN} games per generation", flush=True)
+        return 0
+
     net, drive, learner = build("none")
     learner.rule.randomise_like(final_gains, seed=7)
-    result["conditions"]["random_plasticity"] = [{"generation": generations} | ({} if args.pilot else {"heldout": evaluate(net, drive, learner)})]
+    result["conditions"]["random_plasticity"] = [{"generation": generations, "heldout": evaluate(net, drive, learner)}]
     learner.rule.load(np.ones_like(final_gains))
     # no dopamine = PAM / PPL1 cannot spike (the rule listens to their spikes, whoever caused them)
     net.ablate(np.concatenate([ix["PAM"], ix["PPL1"]]))
     play(net, drive, learner, seedsets.train_seeds(train_base + 790_000, BATCH), 1)
     unchanged = float((learner.rule.gains - 1).abs().sum())
-    if unchanged != 0.0:
-        raise SystemExit(f"no_da changed the gains by {unchanged} — the rule must be inert without dopamine")
     result["conditions"]["no_da"] = [{"generation": 0, "sum_abs_gain_change": unchanged, "training_games": BATCH,
-                                      "note": "dopaminergic neurons silenced; gains exactly unchanged ⇒ the same brain as generation 0 (not re-played)"}]
+                                      "note": "dopaminergic neurons silenced; unchanged gains ⇒ the same brain as generation 0 (not re-played)"}]
     write_result(name, result)
-    if args.pilot:
-        print(f"[pilot] η₀ = {PILOT_ETA0:g} → calibrated η = {calibrated_eta(load_result(name)):g} for {GAMES_PER_GEN} games per generation", flush=True)
     (checkpoint_dir(name) / "README.json").write_text(json.dumps({"note": "gain vectors (float16) per generation; git-ignored"}) + "\n", encoding="utf-8")
-    if not args.pilot:
-        plot(load_result(name), name)
+    plot(load_result(name), name)
+    if unchanged != 0.0:
+        raise SystemExit(f"no_da changed the gains by {unchanged} — the rule must be inert without dopamine (result written, look at it)")
     return 0
 
 
@@ -312,8 +315,11 @@ def render_report(r: dict) -> str:
     lines = [
         f"Plastic set: **{pl['n_plastic_synapses']:,} KC→MBON connections** ({pl['n_kc']:,} KCs, {pl['n_mbon']} MBONs; {pl['mbons_with_dan_input']} MBONs receive "
         f"PAM/PPL1 input = our compartment proxy). η = {pr['eta']:g} (synaptic pilot criterion), τ_e = {pl['params']['tau_e_ms']:.0f} ms, gains ∈ "
-        f"[{pl['params']['g_min']}, {pl['params']['g_max']}]. Context: {pr['n_context_vpns']} KC-projecting visual neurons → {pr['n_recipient_kcs']} KCs, code "
-        f"`{pr['context_code']}`, peak {pr['context_rate_hz']:.0f} Hz, ramp {pr['context_ramp_deg']:.0f}° (fixed by the context diagnostic above). "
+        f"[{pl['params']['g_min']}, {pl['params']['g_max']}]. Context: "
+        + (f"delivered directly to {pr['n_recipient_kcs']} visual Kenyon cells (deviation, DECISIONS.md D13)" if pr.get("context_level") == "kc"
+           else f"{pr['n_context_vpns']} KC-projecting visual neurons → {pr['n_recipient_kcs']} KCs")
+        + f", code `{pr['context_code']}`, {pr['context_rate_hz']:.0f} Hz"
+        + (f", ramp {pr['context_ramp_deg']:.0f}°" if pr["context_ramp_deg"] > 0 else "") + " (fixed by the context diagnostic above). "
         f"{pr['generations']} generations × {pr['games_per_generation']} training games.",
     ]
     if r["hypothesis"] == "h2":

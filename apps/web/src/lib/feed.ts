@@ -155,8 +155,7 @@ export function useFlyFeed(url: string): [FeedSnapshot, FlyFeed] {
   if (!shared) {
     shared = new FlyFeed(url);
   }
-  const feed = shared;
-  // biome-ignore lint/correctness/useExhaustiveDependencies: the shared feed is a process-wide singleton
+  const feed = shared; // a process-wide singleton, so the effect below runs once
   useEffect(() => {
     feed.start();
     return () => feed.stop();

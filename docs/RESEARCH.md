@@ -220,7 +220,38 @@ it must leave the innate reflex alone — those visual neurons are real neurons 
 The selection rule was written into `experiments/mb_drive.py` before its results existed; no game score is involved.
 
 <!-- BEGIN:mb_drive -->
-not yet measured
+9 never-jumping dinos run into their first obstacle; the views are replayed into a naive brain. 265 visual projection neurons synapse directly onto 427 Kenyon cells, which reach 85 of the 96 MBONs. Reference (looming only): P(GF spike) = 0.89, first spike 8 frames before the crash, 0.0 dopaminergic spikes per approach.
+
+| context neurons | code | ramp | peak rate (Hz) | context alone: GF spikes | dopaminergic spikes / approach | KCs active | visually reachable MBONs, last 300 ms (Hz) | with looming: P(GF spike) | spike-time shift (frames) | reflex preserved |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| 47 | class_only | — | 100 | 0 | 0 | 106 | 0.19 | 0.00 | — | no |
+| 47 | class_only | — | 200 | 0 | 108 | 194 | 5.77 | 0.00 | — | no |
+| 47 | class_only | — | 300 | 1 | 97 | 220 | 6.54 | 0.11 | +59 | no |
+| 47 | class_only | 30° | 100 | 0 | 0 | 69 | 0.20 | 0.00 | — | no |
+| 47 | class_only | 30° | 200 | 0 | 11 | 150 | 1.94 | 0.00 | — | no |
+| 47 | class_only | 30° | 300 | 0 | 26 | 197 | 4.09 | 0.11 | +6 | no |
+| 30 | class_only | — | 100 | 0 | 0 | 79 | 0.09 | 0.00 | — | no |
+| 30 | class_only | — | 200 | 0 | 0 | 130 | 1.47 | 0.00 | — | no |
+| 30 | class_only | — | 300 | 0 | 46 | 171 | 4.41 | 0.22 | +0 | no |
+| 30 | class_only | 30° | 100 | 0 | 0 | 50 | 0.08 | 0.00 | — | no |
+| 30 | class_only | 30° | 200 | 0 | 0 | 109 | 0.84 | 0.00 | — | no |
+| 30 | class_only | 30° | 300 | 0 | 2 | 143 | 2.10 | 0.11 | +1 | no |
+| 265 | one_of_9 | — | 100 | 6 | 0 | 23 | 0.00 | 0.78 | +6 | no |
+| 265 | one_of_9 | — | 200 | 10 | 0 | 57 | 0.07 | 0.67 | +8 | no |
+| 265 | one_of_9 | 30° | 100 | 6 | 0 | 4 | 0.00 | 0.78 | +2 | no |
+| 265 | one_of_9 | 30° | 200 | 8 | 0 | 21 | 0.00 | 0.67 | +2 | no |
+| 265 | random_half | — | 100 | 15 | 0 | 126 | 0.17 | 0.67 | +70 | no |
+| 265 | random_half | — | 200 | 20 | 576 | 586 | 12.16 | 0.56 | +69 | no |
+| 265 | random_half | 30° | 100 | 17 | 0 | 72 | 0.17 | 0.56 | +63 | no |
+| 265 | random_half | 30° | 200 | 16 | 0 | 168 | 1.10 | 1.00 | +66 | no |
+| 265 | class_only | — | 100 | 17 | 1 | 79 | 0.12 | 0.89 | +68 | no |
+| 265 | class_only | — | 200 | 21 | 577 | 519 | 11.98 | 0.56 | +69 | no |
+| 265 | class_only | 30° | 100 | 24 | 0 | 48 | 0.15 | 0.78 | +51 | no |
+| 265 | class_only | 30° | 200 | 20 | 10 | 119 | 1.33 | 1.00 | +66 | no |
+
+**No configuration preserves the reflex.**
+
+Source: `results/mb_drive.json`.
 <!-- END:mb_drive -->
 
 **Reading.** Driving all 265 KC-projecting visual neurons fires the Giant Fiber by itself — the dino would jump at
@@ -238,7 +269,22 @@ bends the project's rule 3 (sensory input only through identified sensory pathwa
 The same diagnostic and the same rule:
 
 <!-- BEGIN:mb_drive_kc -->
-not yet measured
+Same protocol, but the context drives the visual Kenyon cells themselves (rates are Kenyon-cell firing rates). Reference (looming only): P(GF spike) = 0.89, first spike 8 frames before the crash, 0.0 dopaminergic spikes per approach.
+
+| context neurons | code | ramp | peak rate (Hz) | context alone: GF spikes | dopaminergic spikes / approach | KCs active | visually reachable MBONs, last 300 ms (Hz) | with looming: P(GF spike) | spike-time shift (frames) | reflex preserved |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| 388 | class_only | — | 5 | 0 | 0 | 191 | 0.00 | 0.89 | +0 | yes |
+| 388 | class_only | — | 10 | 0 | 0 | 195 | 0.11 | 0.89 | +0 | yes |
+| 388 | class_only | — | 20 | 0 | 6 | 195 | 1.25 | 0.89 | +0 | yes |
+| 388 | class_only | — | 40 | 0 | 86 | 195 | 3.12 | 0.89 | +0 | yes |
+| 388 | class_only | 30° | 5 | 0 | 0 | 161 | 0.00 | 0.89 | +0 | yes |
+| 388 | class_only | 30° | 10 | 0 | 0 | 188 | 0.05 | 0.89 | +0 | yes |
+| 388 | class_only | 30° | 20 | 0 | 1 | 194 | 0.75 | 0.89 | +0 | yes |
+| 388 | class_only | 30° | 40 | 0 | 19 | 195 | 2.28 | 0.89 | +0 | yes |
+
+**Chosen by the pre-written rule: 388 neurons, `class_only`, ramp 0°, 40 Hz** — visually reachable MBONs fire 3.12 Hz before the collision, above the 1 Hz criterion.
+
+Source: `results/mb_drive_kc.json`.
 <!-- END:mb_drive_kc -->
 
 **Reading.** A Kenyon-cell-level context leaves the reflex untouched and makes MBONs fire — mostly MBON27, MBON09 and
@@ -255,7 +301,13 @@ itself (the published model treats dopamine like a fast excitatory transmitter a
 neurons are wired recurrently with Kenyon cells and MBONs). Measured:
 
 <!-- BEGIN:kc_volley -->
-not yet measured
+16 games (13 crashes) with looming, visual context and dopamine bursts, plasticity off. A volley frame has more than 300 Kenyon-cell spikes; with the context alone the median is 76.
+
+- **2 volley onsets in 13 crashes**; 9 volley frames of 8,199 column-frames, 9 of them inside the punishment tail after a crash (onset 9–12 frames after the crash).
+- In a volley frame a median of **1632 of 5,177 Kenyon cells** fire and dopaminergic neurons fire 102 spikes per frame on their own.
+- Replaying the first 8 seeds in reversed column order: onsets **reappear at the same frame of the same game** — a property of the game state, not of the batched engine.
+
+Source: `results/kc_volley.json`.
 <!-- END:kc_volley -->
 
 Our play loop used to leave a finished game's brain column running until the whole batch was done — with a volley
@@ -266,7 +318,46 @@ after a crash and is counted in every learning result (`kc_volley_column_frames`
 reward / punishment bursts themselves ignite the mushroom body:
 
 <!-- BEGIN:da_burst -->
-not yet measured
+One brain column per configuration; 307 PAM or 16 PPL1 neurons driven; 200 ms baseline, burst, 600 ms after; the last 200 ms are undriven. *Ignites* = more than 10 Kenyon-cell spikes per 10-ms frame in those last 200 ms.
+
+| cluster | rate (Hz) | duration (ms) | context | KC spikes / frame: before | during burst | last 200 ms | DAN spikes / frame, last 200 ms | ignites |
+|---|---:|---:|---|---:|---:|---:|---:|---|
+| PAM | 10 | 50 | off | 0.0 | 0.0 | 0.0 | 0.0 | no |
+| PAM | 10 | 50 | on | 81.1 | 81.2 | 0.0 | 0.1 | no |
+| PAM | 10 | 100 | off | 0.0 | 0.0 | 0.0 | 0.0 | no |
+| PAM | 10 | 100 | on | 81.2 | 83.0 | 0.1 | 0.0 | no |
+| PAM | 25 | 50 | off | 0.0 | 0.0 | 0.0 | 0.0 | no |
+| PAM | 25 | 50 | on | 81.9 | 74.4 | 0.0 | 0.0 | no |
+| PAM | 25 | 100 | off | 0.0 | 0.0 | 0.0 | 0.0 | no |
+| PAM | 25 | 100 | on | 79.5 | 82.0 | 0.1 | 0.0 | no |
+| PAM | 50 | 50 | off | 0.0 | 0.0 | 0.0 | 0.0 | no |
+| PAM | 50 | 50 | on | 84.9 | 73.8 | 0.1 | 0.1 | no |
+| PAM | 50 | 100 | off | 0.0 | 0.0 | 0.0 | 0.0 | no |
+| PAM | 50 | 100 | on | 76.4 | 80.1 | 0.0 | 0.1 | no |
+| PAM | 100 | 50 | off | 0.0 | 0.0 | 0.0 | 0.0 | no |
+| PAM | 100 | 50 | on | 79.5 | 86.6 | 0.0 | 0.0 | no |
+| PAM | 100 | 100 | off | 0.0 | 0.0 | 0.0 | 0.0 | no |
+| PAM | 100 | 100 | on | 82.9 | 78.0 | 0.1 | 0.0 | no |
+| PPL1 | 10 | 50 | off | 0.0 | 0.0 | 0.0 | 0.0 | no |
+| PPL1 | 10 | 50 | on | 75.6 | 77.6 | 0.1 | 0.1 | no |
+| PPL1 | 10 | 100 | off | 0.0 | 0.0 | 0.0 | 0.0 | no |
+| PPL1 | 10 | 100 | on | 79.6 | 81.1 | 0.0 | 0.1 | no |
+| PPL1 | 25 | 50 | off | 0.0 | 0.0 | 0.0 | 0.0 | no |
+| PPL1 | 25 | 50 | on | 79.9 | 75.4 | 0.0 | 1.6 | no |
+| PPL1 | 25 | 100 | off | 0.0 | 0.0 | 0.0 | 0.0 | no |
+| PPL1 | 25 | 100 | on | 76.7 | 80.3 | 0.1 | 0.0 | no |
+| PPL1 | 50 | 50 | off | 0.0 | 0.0 | 0.0 | 0.0 | no |
+| PPL1 | 50 | 50 | on | 80.9 | 76.0 | 0.1 | 0.1 | no |
+| PPL1 | 50 | 100 | off | 0.0 | 0.0 | 0.0 | 0.0 | no |
+| PPL1 | 50 | 100 | on | 78.2 | 78.1 | 0.0 | 0.0 | no |
+| PPL1 | 100 | 50 | off | 0.0 | 0.0 | 0.0 | 0.0 | no |
+| PPL1 | 100 | 50 | on | 80.5 | 87.0 | 0.1 | 0.0 | no |
+| PPL1 | 100 | 100 | off | 0.0 | 0.0 | 0.0 | 0.0 | no |
+| PPL1 | 100 | 100 | on | 76.3 | 83.4 | 0.1 | 0.0 | no |
+
+**Chosen by the pre-written rule: 100 Hz for 100 ms** (both clusters).
+
+Source: `results/da_burst.json`.
 <!-- END:da_burst -->
 
 **Reading.** Neither a PAM nor a PPL1 burst alone ignites the mushroom body, with or without the visual context, so
@@ -286,7 +377,8 @@ shuffled-dopamine ablation, on the same held-out seeds (criteria and analysis fi
 The learning rate is not tuned on any score: a pilot (DEV seeds for evaluation, training seeds that are never reused)
 sets η so that the 1 % fastest-learning synapses lose half their weight in the first generation.
 "No dopamine" means the dopaminergic neurons cannot spike: the rule listens to PAM / PPL1 spikes whoever caused them,
-and the network itself makes them fire a little (endogenous dopamine).
+and the network itself makes them fire a little (endogenous dopamine). "Shuffled dopamine" delivers the reward bursts
+at random moments instead of after a cleared obstacle; the punishment stays after the crash (DECISIONS.md D20).
 
 <!-- BEGIN:learning -->
 not yet measured
@@ -309,6 +401,22 @@ avoidance-type response halves it. Valence follows Aso et al. 2014 (eLife 3:e045
 avoidance, GABAergic and cholinergic MBONs approach; transmitters are FlyWire's predictions. The mapping is fixed and
 hand-written; the only learned quantities remain the KC→MBON gains, changed only by the dopamine-gated rule. Same
 protocol, criteria and ablations as H1 (git tag `prereg-phase4-h2`).
+
+What is the ± 1-octave range worth at best? The naive fly with the gain simply set by hand (DEV seeds):
+
+<!-- BEGIN:gain_sensitivity -->
+Naive frozen fly, DEV_SEEDS[:32], no context, no learning; the frozen gain is 3 Hz. DEV seeds: a sensitivity analysis, not a headline result.
+
+| gain | score mean [95% CI] | P(jump / approach) | jump, frames before collision (median) | P(cleared given jump) | share of jumps with nothing in view |
+|---|---:|---:|---:|---:|---:|
+| G · 2^-1 = 1.50 Hz | 42.2 [40.8, 43.8] | 0.18 | 8.1 | 1.00 | 0.00 |
+| G · 2^-0.5 = 2.12 Hz | 52.0 [47.7, 56.9] | 0.53 | 6.7 | 1.00 | 0.00 |
+| G · 2^+0 = 3.00 Hz | 88.7 [75.7, 102.5] | 0.82 | 6.1 | 1.00 | 0.00 |
+| G · 2^+0.5 = 4.24 Hz | 189.6 [143.6, 241.3] | 0.95 | 8.0 | 0.99 | 0.00 |
+| G · 2^+1 = 6.00 Hz | 174.2 [131.7, 221.2] | 0.95 | 10.8 | 1.00 | 0.00 |
+
+Source: `results/gain_sensitivity.json`.
+<!-- END:gain_sensitivity -->
 
 <!-- BEGIN:learning_h2 -->
 not yet measured

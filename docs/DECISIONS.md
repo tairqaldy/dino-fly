@@ -147,6 +147,15 @@ The plasticity rule listens to PAM / PPL1 spikes, whoever caused them. The netwo
 silences PAM / PPL1 (cannot spike); the script asserts that the gains stay exactly 1. Endogenous dopamine is left in
 place in all other conditions — it is the connectome's own.
 
+## D20 — What "shuffled dopamine" shuffles · decided
+
+First version: as many bursts as the naive fly earns, at random moments, randomly PAM or PPL1. In the pilot the PPL1
+bursts that landed inside a running game ignited self-sustained Kenyon-cell volleys (1,384 volley column-frames vs.
+17 in the normal condition; `results/learning_pilot.json` at commit `76c98e6`), so that control would have tested
+"seizures are bad", not "contingency matters". **Decision:** the control shuffles the *reward*: PAM bursts at random
+moments (≈ 1 per 120 frames, magnitude uniform in [0.25, 1]) instead of after a cleared obstacle; the punishment stays
+after the crash, where it is in every condition. Decided on DEV / training seeds, before any held-out learning game.
+
 ## D19 — Learning-rate calibration and training budget · decided
 
 η is not given by the brief and no published number maps onto this model. It is set by a pilot through a synaptic

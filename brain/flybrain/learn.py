@@ -113,15 +113,17 @@ class Learner:
                 out[:n_ctx, col] = context_rates(n_ctx, o.type, view.theta_deg, self.context)
             if self.sensory_gain_params is not None:
                 self._ctx_now[col] = ctx
-            # shuffled-DA ablation: a similar number of bursts, delivered at random moments
-            if self.da_mode == "shuffled" and self._rng.random() < self._shuffle_p:
-                (self.reward if self._rng.random() < 0.5 else self.punish)[col].trigger(1.0)
+            # shuffled-DA ablation: rewards arrive at random moments instead of after a cleared obstacle. Punishments
+            # stay where they are (after the crash): a PPL1 burst inside a running game ignites self-sustained
+            # Kenyon-cell volleys in this model (pilot at commit 76c98e6: 1,384 volley column-frames vs. 17).
+            if self.da_mode == "shuffled" and col not in tails and self._rng.random() < self._shuffle_p:
+                self.reward[col].trigger(float(self._rng.uniform(0.25, 1.0)))
                 self.shuffled_bursts += 1
             out[n_ctx : n_ctx + n_pam, col] = self.reward[col].rate()
             out[n_ctx + n_pam :, col] = self.punish[col].rate()
         return out
 
-    _shuffle_p = 1.0 / 150.0  # ≈ one burst per 150 frames, close to the event rate of the naive fly
+    _shuffle_p = 1.0 / 120.0  # ≈ one reward per 120 frames, the rate at which the naive fly clears obstacles
 
     def frame(self, watch_counts: np.ndarray) -> None:
         self.rule.frame(watch_counts)
@@ -161,7 +163,7 @@ class Learner:
             self.rewards += 1
 
     def on_crash(self, col: int) -> int:
-        if self.da_mode == "normal":
+        if self.da_mode in ("normal", "shuffled"):
             self.punish[col].trigger(1.0)
             self.punishments += 1
         return self.dopamine.burst_frames + 5  # frames the crashed game stays in its column (punishment tail)

@@ -1,0 +1,195 @@
+{
+  "experiment": "gain_sensitivity",
+  "protocol": {
+    "seeds": "DEV_SEEDS[:32]",
+    "frozen_gain_hz": 3.0,
+    "noise_seed": 0
+  },
+  "rows": [
+    {
+      "octaves": -1.0,
+      "gain_hz": 1.5,
+      "score_stats": {
+        "n": 32,
+        "mean": 42.1875,
+        "median": 40.0,
+        "q25": 40.0,
+        "q75": 40.0,
+        "min": 40.0,
+        "max": 56.0,
+        "mean_ci95": [
+          40.8125,
+          43.8125
+        ]
+      },
+      "cleared_stats": {
+        "n": 32,
+        "mean": 0.21875,
+        "median": 0.0,
+        "q25": 0.0,
+        "q75": 0.0,
+        "min": 0.0,
+        "max": 1.0,
+        "mean_ci95": [
+          0.09375,
+          0.375
+        ]
+      },
+      "jumps_per_game": 0.21875,
+      "p_jump_per_approach": 0.1794871794871795,
+      "p_cleared_given_jump": 1.0,
+      "frames_to_collision_at_jump_median": 8.05401949816206,
+      "false_jump_rate": 0.0
+    },
+    {
+      "octaves": -0.5,
+      "gain_hz": 2.121320343559643,
+      "score_stats": {
+        "n": 32,
+        "mean": 51.96875,
+        "median": 48.0,
+        "q25": 40.0,
+        "q75": 57.25,
+        "min": 40.0,
+        "max": 88.0,
+        "mean_ci95": [
+          47.655468750000004,
+          56.9375
+        ]
+      },
+      "cleared_stats": {
+        "n": 32,
+        "mean": 1.25,
+        "median": 1.0,
+        "q25": 0.0,
+        "q75": 2.0,
+        "min": 0.0,
+        "max": 5.0,
+        "mean_ci95": [
+          0.8125,
+          1.75
+        ]
+      },
+      "jumps_per_game": 1.25,
+      "p_jump_per_approach": 0.5333333333333333,
+      "p_cleared_given_jump": 1.0,
+      "frames_to_collision_at_jump_median": 6.653780748486192,
+      "false_jump_rate": 0.0
+    },
+    {
+      "octaves": 0.0,
+      "gain_hz": 3.0,
+      "score_stats": {
+        "n": 32,
+        "mean": 88.65625,
+        "median": 79.5,
+        "q25": 52.75,
+        "q75": 110.25,
+        "min": 46.0,
+        "max": 192.0,
+        "mean_ci95": [
+          75.74921875000001,
+          102.46875
+        ]
+      },
+      "cleared_stats": {
+        "n": 32,
+        "mean": 5.03125,
+        "median": 4.0,
+        "q25": 1.0,
+        "q75": 7.0,
+        "min": 1.0,
+        "max": 16.0,
+        "mean_ci95": [
+          3.71875,
+          6.4375
+        ]
+      },
+      "jumps_per_game": 5.125,
+      "p_jump_per_approach": 0.8241206030150754,
+      "p_cleared_given_jump": 1.0,
+      "frames_to_collision_at_jump_median": 6.075855971544788,
+      "false_jump_rate": 0.0
+    },
+    {
+      "octaves": 0.5,
+      "gain_hz": 4.242640687119286,
+      "score_stats": {
+        "n": 32,
+        "mean": 189.5625,
+        "median": 146.5,
+        "q25": 92.5,
+        "q75": 232.5,
+        "min": 40.0,
+        "max": 545.0,
+        "mean_ci95": [
+          143.59296875,
+          241.34453125
+        ]
+      },
+      "cleared_stats": {
+        "n": 32,
+        "mean": 13.8125,
+        "median": 10.5,
+        "q25": 5.75,
+        "q75": 19.0,
+        "min": 0.0,
+        "max": 38.0,
+        "mean_ci95": [
+          10.0,
+          17.96875
+        ]
+      },
+      "jumps_per_game": 14.28125,
+      "p_jump_per_approach": 0.9481327800829875,
+      "p_cleared_given_jump": 0.9912472647702407,
+      "frames_to_collision_at_jump_median": 7.975213675213674,
+      "false_jump_rate": 0.0
+    },
+    {
+      "octaves": 1.0,
+      "gain_hz": 6.0,
+      "score_stats": {
+        "n": 32,
+        "mean": 174.25,
+        "median": 151.0,
+        "q25": 68.0,
+        "q75": 222.75,
+        "min": 40.0,
+        "max": 492.0,
+        "mean_ci95": [
+          131.6875,
+          221.21875
+        ]
+      },
+      "cleared_stats": {
+        "n": 32,
+        "mean": 12.875,
+        "median": 11.5,
+        "q25": 3.5,
+        "q75": 17.5,
+        "min": 0.0,
+        "max": 42.0,
+        "mean_ci95": [
+          9.03125,
+          17.0625
+        ]
+      },
+      "jumps_per_game": 13.65625,
+      "p_jump_per_approach": 0.9457700650759219,
+      "p_cleared_given_jump": 0.9954128440366973,
+      "frames_to_collision_at_jump_median": 10.759887631662094,
+      "false_jump_rate": 0.0
+    }
+  ],
+  "meta": {
+    "timestamp_utc": "2026-09-20T22:42:45+00:00",
+    "git_commit": "76c98e6d390bb33ab20d70cfe57d6a785f53c985",
+    "git_dirty": true,
+    "python": "3.12.12",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "torch": "2.14.0+cu130",
+    "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+    "cuda": "13.0"
+  }
+}

@@ -177,6 +177,17 @@ def test_learning_loop_changes_gains_only_through_dopamine(synth: Connectome, da
     assert learner.spike_totals["frames"] > 0 and learner.sensory_gain() is None  # H1: nothing touches the senses
 
 
+def test_reward_is_scaled_by_the_jump_that_cleared_the_obstacle(synth: Connectome):
+    """By the time an obstacle counts as passed the view has moved on to the next one; the reward must still be scaled
+    by the timing of the jump over the obstacle that was cleared (it used to get the minimum magnitude)."""
+    net, drive, learner, n_lc4, n_lplc2, gf = make_learning_setup(synth, 3, "normal")
+    rewarded, original = [], learner.on_cleared
+    learner.on_cleared = lambda col, approach: (rewarded.append(approach), original(col, approach))[1]
+    play_games(net, drive, n_lc4, n_lplc2, gf, [1, 2, 3, 4, 5, 6], looming=LoomingParams(version=0, gain_hz=150.0), max_frames=900, learner=learner)
+    assert len(rewarded) >= 1 and learner.rewards == len(rewarded)
+    assert all(a is not None and a.jumped and a.frames_to_collision_at_jump is not None for a in rewarded)
+
+
 def test_columns_without_a_game_are_silent_and_never_teach(synth: Connectome):
     """Found on the real connectome: a finished column kept a self-sustained Kenyon-cell volley going and, through
     endogenous dopamine, rewrote most synapses while it sat idle. Idle columns are reset and masked out."""

@@ -39,221 +39,28 @@
           "frames": 0,
           "kc_volley_column_frames": 0
         },
-        "heldout": {
-          "score_stats": {
-            "n": 32,
-            "mean": 88.0,
-            "median": 79.5,
-            "q25": 52.75,
-            "q75": 108.75,
-            "min": 46.0,
-            "max": 192.0,
-            "mean_ci95": [
-              75.06171875000001,
-              101.87578124999999
-            ]
-          },
-          "cleared_stats": {
-            "n": 32,
-            "mean": 4.96875,
-            "median": 4.0,
-            "q25": 1.0,
-            "q75": 7.0,
-            "min": 1.0,
-            "max": 16.0,
-            "mean_ci95": [
-              3.65625,
-              6.375
-            ]
-          },
-          "jumps_per_game": 5.03125,
-          "p_jump_per_approach": 0.8214285714285714,
-          "p_cleared_given_jump": 1.0,
-          "frames_to_collision_at_jump_median": 6.372546103509814,
-          "false_jump_rate": 0.0,
-          "reaction_latency_bio_ms_median": 520.0,
-          "score": [
-            96,
-            151,
-            101,
-            131,
-            56,
-            46,
-            48,
-            65,
-            192,
-            48,
-            64,
-            121,
-            106,
-            79,
-            56,
-            102,
-            70,
-            47,
-            52,
-            117,
-            48,
-            105,
-            46,
-            69,
-            50,
-            53,
-            80,
-            148,
-            91,
-            154,
-            123,
-            101
-          ]
-        },
-        "wall_s": 110.45430970191956
+        "wall_s": 0.024007797241210938
       },
       {
         "generation": 1,
-        "gain_mean": 0.9998830556869507,
-        "gain_min": 0.9849070310592651,
+        "gain_mean": 0.9997577667236328,
+        "gain_min": 0.9631236791610718,
         "gain_max": 1.0,
-        "fraction_of_gains_changed": 0.02939239652430896,
+        "fraction_of_gains_changed": 0.037712211496763626,
         "fraction_at_g_min": 0.0,
-        "sum_abs_gain_change": 7.2819929122924805,
-        "top1pct_mean_depression": 0.0065790512599051,
+        "sum_abs_gain_change": 15.079240798950195,
+        "top1pct_mean_depression": 0.015438647009432316,
         "rewards_so_far": 161,
         "punishments_so_far": 32,
         "shuffled_bursts_so_far": 0,
         "spike_totals_so_far": {
-          "kc": 1835273,
-          "mbon": 72766,
-          "dan": 153155,
-          "frames": 2914,
-          "kc_volley_column_frames": 17
+          "kc": 935222,
+          "mbon": 52418,
+          "dan": 314704,
+          "frames": 1730,
+          "kc_volley_column_frames": 15
         },
-        "heldout": {
-          "score_stats": {
-            "n": 32,
-            "mean": 89.40625,
-            "median": 85.5,
-            "q25": 55.25,
-            "q75": 108.75,
-            "min": 46.0,
-            "max": 192.0,
-            "mean_ci95": [
-              76.74921875000001,
-              103.15703124999999
-            ]
-          },
-          "cleared_stats": {
-            "n": 32,
-            "mean": 5.125,
-            "median": 4.5,
-            "q25": 1.0,
-            "q75": 7.0,
-            "min": 1.0,
-            "max": 16.0,
-            "mean_ci95": [
-              3.84375,
-              6.53125
-            ]
-          },
-          "jumps_per_game": 5.1875,
-          "p_jump_per_approach": 0.8258706467661692,
-          "p_cleared_given_jump": 1.0,
-          "frames_to_collision_at_jump_median": 6.329073482428116,
-          "false_jump_rate": 0.0,
-          "reaction_latency_bio_ms_median": 510.0,
-          "score": [
-            96,
-            151,
-            101,
-            131,
-            56,
-            46,
-            48,
-            65,
-            192,
-            48,
-            64,
-            121,
-            106,
-            79,
-            56,
-            102,
-            70,
-            47,
-            52,
-            117,
-            93,
-            105,
-            46,
-            69,
-            50,
-            53,
-            80,
-            148,
-            91,
-            154,
-            123,
-            101
-          ]
-        },
-        "wall_s": 324.68246126174927
-      }
-    ],
-    "shuffled_da": [
-      {
-        "generation": 0,
-        "gain_mean": 1.0,
-        "gain_min": 1.0,
-        "gain_max": 1.0,
-        "fraction_of_gains_changed": 0.0,
-        "fraction_at_g_min": 0.0,
-        "sum_abs_gain_change": 0.0,
-        "top1pct_mean_depression": 0.0,
-        "rewards_so_far": 0,
-        "punishments_so_far": 0,
-        "shuffled_bursts_so_far": 0,
-        "spike_totals_so_far": {
-          "kc": 0,
-          "mbon": 0,
-          "dan": 0,
-          "frames": 0,
-          "kc_volley_column_frames": 0
-        },
-        "wall_s": 0.024007081985473633
-      },
-      {
-        "generation": 1,
-        "gain_mean": 0.9148122668266296,
-        "gain_min": 0.0,
-        "gain_max": 1.0,
-        "fraction_of_gains_changed": 0.6831563900354958,
-        "fraction_at_g_min": 0.0002248598641203964,
-        "sum_abs_gain_change": 5303.873046875,
-        "top1pct_mean_depression": 0.8039491772651672,
-        "rewards_so_far": 0,
-        "punishments_so_far": 0,
-        "shuffled_bursts_so_far": 109,
-        "spike_totals_so_far": {
-          "kc": 3186526,
-          "mbon": 158586,
-          "dan": 339933,
-          "frames": 2118,
-          "kc_volley_column_frames": 1384
-        },
-        "wall_s": 322.3768563270569
-      }
-    ],
-    "random_plasticity": [
-      {
-        "generation": 1
-      }
-    ],
-    "no_da": [
-      {
-        "generation": 0,
-        "sum_abs_gain_change": 0.0,
-        "training_games": 32,
-        "note": "dopaminergic neurons silenced; gains exactly unchanged \u21d2 the same brain as generation 0 (not re-played)"
+        "wall_s": 235.2590434551239
       }
     ]
   },
@@ -292,8 +99,8 @@
     "n_ppl1": 16
   },
   "meta": {
-    "timestamp_utc": "2026-09-20T22:16:35+00:00",
-    "git_commit": "8d6cda8d398cb7151a92643d61a57372159a4f54",
+    "timestamp_utc": "2026-09-20T22:36:59+00:00",
+    "git_commit": "76c98e6d390bb33ab20d70cfe57d6a785f53c985",
     "git_dirty": true,
     "python": "3.12.12",
     "platform": "Windows-11-10.0.26200-SP0",

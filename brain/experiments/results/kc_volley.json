@@ -1,0 +1,67 @@
+{
+  "experiment": "kc_volley",
+  "protocol": {
+    "seeds": [
+      1800001,
+      1800002,
+      1800003,
+      1800004,
+      1800005,
+      1800006,
+      1800007,
+      1800008,
+      1800009,
+      1800010,
+      1800011,
+      1800012,
+      1800013,
+      1800014,
+      1800015,
+      1800016
+    ],
+    "batch": 8,
+    "max_frames": 700,
+    "volley_threshold_kc_spikes_per_frame": 300,
+    "n_kc": 5177,
+    "context": {
+      "level": "kc",
+      "code": "class_only",
+      "rate_hz": 40.0
+    }
+  },
+  "games": 16,
+  "crashes": 13,
+  "onsets": [
+    {
+      "seed": 1800001,
+      "game_frame": 417,
+      "in_punishment_tail": true,
+      "frames_after_crash": 9,
+      "kcs_active_next_frame": 1490
+    },
+    {
+      "seed": 1800010,
+      "game_frame": 267,
+      "in_punishment_tail": true,
+      "frames_after_crash": 12,
+      "kcs_active_next_frame": 1795
+    }
+  ],
+  "column_frames": 8199,
+  "volley_column_frames": 9,
+  "volley_column_frames_in_punishment_tail": 9,
+  "kc_spikes_per_frame_with_context_median": 76.0,
+  "kcs_active_per_volley_frame_median": 1632.0,
+  "dan_spikes_per_frame_in_volley_median": 102.0,
+  "onsets_follow_the_seed_when_columns_are_reversed": true,
+  "meta": {
+    "timestamp_utc": "2026-09-20T22:18:40+00:00",
+    "git_commit": "76c98e6d390bb33ab20d70cfe57d6a785f53c985",
+    "git_dirty": true,
+    "python": "3.12.12",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "torch": "2.14.0+cu130",
+    "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+    "cuda": "13.0"
+  }
+}

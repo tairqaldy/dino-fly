@@ -67,6 +67,11 @@ class GameResult:
         return asdict(self)
 
 
+def _ident(o) -> int:
+    """Identity of an obstacle while it lives: its type and the draws made when it was spawned."""
+    return hash((o.type, o.gap, o.size, o.y_bottom_px))
+
+
 class _Game:
     def __init__(self, seed: int, noise_seed: int, motor: MotorParams) -> None:
         self.seed, self.noise_seed = seed, noise_seed
@@ -77,6 +82,7 @@ class _Game:
         self.actions: list[tuple[int, int]] = []
         self.approaches: list[Approach] = []
         self.current: tuple[int, Approach] | None = None  # (spawn identity, approach)
+        self.by_ident: dict[int, Approach] = {}
         self.gf_spikes = 0
         self.false_jumps = 0
 
@@ -202,12 +208,13 @@ def play_games(
             # --- bookkeeping per approach (identity of an obstacle = its gap draw + type, stable while it lives)
             if view.obstacle_index >= 0:
                 o = s.obstacles[view.obstacle_index]
-                ident = hash((o.type, o.gap, o.size, o.y_bottom_px))
+                ident = _ident(o)
                 if g.current is None or g.current[0] != ident:
                     if g.current is not None:
                         g.current[1].outcome = "cleared"
                     g.current = (ident, Approach(o.type, o.size, o.y_bottom_px, s.speed, s.frame))
                     g.approaches.append(g.current[1])
+                    g.by_ident[ident] = g.current[1]
                 ap = g.current[1]
                 if n_gf:
                     if ap.gf_spikes == 0:
@@ -237,7 +244,10 @@ def play_games(
             g.state = dc.step(s, g.jump_key, False)
             if learner is not None:
                 if g.state.cleared > s.cleared:
-                    learner.on_cleared(col, g.current[1] if g.current is not None else None)
+                    # the obstacle that was just passed — by then the view has usually moved on to the next one
+                    before = {_ident(o) for o in s.obstacles if o.passed}
+                    just = [_ident(o) for o in g.state.obstacles if o.passed and _ident(o) not in before]
+                    learner.on_cleared(col, g.by_ident.get(just[0]) if len(just) == 1 else None)
                 if g.state.crashed:
                     tails[col] = learner.on_crash(col)
                     continue

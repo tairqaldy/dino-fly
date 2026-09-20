@@ -179,6 +179,7 @@ RENDERERS: dict[str, Callable[[], str]] = {
     "da_burst": _later("da_burst"),
     "kc_volley": _later("kc_volley"),
     "learning": _later("learning"),
+    "gain_sensitivity": _later("gain_sensitivity"),
     "learning_h2": _later("learning_h2", "learning"),
     "crowd_teaching": _later("crowd_teaching"),
 }
