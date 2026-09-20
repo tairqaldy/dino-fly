@@ -1,0 +1,21 @@
+{
+  "name": "@dino-fly/dino-render",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Canvas renderer for dino-core states (own pixel art, day/night, fly ghost).",
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@dino-fly/dino-core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  }
+}

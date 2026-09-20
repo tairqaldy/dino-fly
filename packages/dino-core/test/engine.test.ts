@@ -4,7 +4,7 @@ import { recordRun, stateHash } from "../scripts/hash.js";
 import { holdJump, never, oracle, seededRandom } from "../scripts/policies.js";
 import { CONSTANTS, collides, createInitialState, ENGINE_VERSION, obstacleBoxes, score, step } from "../src/engine.js";
 import { replay, summarize, validateActionLog } from "../src/replay.js";
-import { bitsToInput, canonicalString, inputToBits, stateToInts } from "../src/serialize.js";
+import { bitsToInput, canonicalString, inputToBits, intsToState, stateToInts } from "../src/serialize.js";
 import type { GameState, Input, Obstacle } from "../src/types.js";
 import { NO_INPUT } from "../src/types.js";
 
@@ -261,9 +261,12 @@ describe("replay and serialisation", () => {
     }
   });
 
-  it("serialises to 19 + 10·n integers", () => {
+  it("serialises to 19 + 10·n integers and back", () => {
     const s = run(11, 400, oracle).at(-1) as GameState;
     expect(stateToInts(s)).toHaveLength(19 + 10 * s.obstacles.length);
+    expect(intsToState(stateToInts(s))).toEqual(s);
+    expect(() => intsToState([1, 2, 3])).toThrow(RangeError);
+    expect(() => intsToState([...stateToInts(s), 0.5])).toThrow(RangeError);
     expect(stateHash(s)).toMatch(/^[0-9a-f]{8}$/);
   });
 });

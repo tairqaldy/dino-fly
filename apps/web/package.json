@@ -1,0 +1,33 @@
+{
+  "name": "@dino-fly/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Public app + local dashboard: play Chrome Dino against a fruit-fly brain.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "predev": "node scripts/sync-research.mjs",
+    "dev": "vite",
+    "prebuild": "node scripts/sync-research.mjs",
+    "build": "tsc -p tsconfig.json && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@dino-fly/dino-core": "workspace:*",
+    "@dino-fly/dino-render": "workspace:*",
+    "@dino-fly/protocol": "workspace:*",
+    "marked": "^16.0.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "^7.0.2",
+    "vite": "^7.0.0",
+    "vitest": "^5.0.1"
+  }
+}

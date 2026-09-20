@@ -37,6 +37,21 @@ def info() -> None:
         typer.echo(f"{key:>28}: {state}")
 
 
+@app.command("worker")
+def worker(
+    host: str = typer.Option("127.0.0.1", help="Bind address of the local WebSocket feed."),
+    port: int = typer.Option(8765),
+    api: str = typer.Option(None, help="Public hub to push to, e.g. wss://api.example.com/worker (outbound only)."),
+    token: str = typer.Option(None, envvar="WORKER_TOKEN", help="Shared secret for the hub."),
+    device: str = typer.Option("cuda"),
+    connectome: str = typer.Option("flywire783"),
+) -> None:
+    """Let the fly play live and stream it (local dashboard feed; optionally the public hub)."""
+    from flybrain.worker import main as worker_main
+
+    worker_main(host=host, port=port, api=api, token=token, device=device, connectome=connectome)
+
+
 @app.command("neurons-doc")
 def neurons_doc(
     check: bool = typer.Option(False, "--check", help="Fail if docs/NEURONS.md is out of date."),

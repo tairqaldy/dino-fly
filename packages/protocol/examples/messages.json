@@ -1,0 +1,64 @@
+[
+  {
+    "type": "fly.hello",
+    "v": 1,
+    "ts": 1790000000000,
+    "payload": {
+      "workerId": "laptop-1",
+      "connectome": "flywire783",
+      "neurons": 138639,
+      "engineVersion": 1,
+      "transducerVersion": 1,
+      "generation": 0,
+      "bioMsPerFrame": 10,
+      "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "groups": ["LC4", "LPLC2", "GF", "DN", "KC", "MBON", "PAM", "PPL1", "other"]
+    }
+  },
+  {
+    "type": "fly.frame",
+    "v": 1,
+    "ts": 1790000000016,
+    "payload": {
+      "seed": 42,
+      "state": [1, 1354318431, 6001, 6000, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, 0],
+      "gf": 1,
+      "jump": true,
+      "theta": 41.7,
+      "thetaDot": 312.5,
+      "rates": [0.31, 2.99],
+      "activity": [0, 3, 1, 2, 0, 0, 0, 0, 57]
+    }
+  },
+  {
+    "type": "fly.run_end",
+    "v": 1,
+    "ts": 1790000005000,
+    "payload": { "seed": 42, "generation": 0, "score": 88, "frames": 570, "cleared": 5, "deathType": 1, "jumps": 5, "actions": [[301, 1], [311, 0]] }
+  },
+  {
+    "type": "fly.stats",
+    "v": 1,
+    "ts": 1790000005001,
+    "payload": {
+      "generation": 0,
+      "gamesPlayed": 12,
+      "bestScore": 203,
+      "meanScoreRecent": 91.5,
+      "totalJumps": 61,
+      "totalDeaths": 12,
+      "realtimeFactor": 0.8,
+      "learningCurve": [{ "generation": 0, "heldoutMean": 88.7 }]
+    }
+  },
+  { "type": "fly.status", "v": 1, "ts": 1790000005002, "payload": { "online": true, "generation": 0 } },
+  { "type": "dopamine.event", "v": 1, "ts": 1790000005003, "payload": { "kind": "punish", "magnitude": 1, "source": "hardware" } },
+  { "type": "human.input", "v": 1, "ts": 1790000005004, "payload": { "source": "pose", "action": "jump" } },
+  { "type": "lab.command", "v": 1, "ts": 1790000005005, "payload": { "command": "set_seed", "value": 7 } },
+  {
+    "type": "leaderboard.update",
+    "v": 1,
+    "ts": 1790000005006,
+    "payload": { "humans": [{ "name": "tair", "score": 512 }], "fly": [{ "generation": 0, "bestScore": 203 }], "flyPercentile": 12.5 }
+  }
+]

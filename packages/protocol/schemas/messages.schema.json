@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/tairqaldy/dino-fly/packages/protocol/schemas/messages.schema.json",
+  "title": "dino-fly realtime protocol v1",
+  "description": "Every WebSocket message is an envelope {type, v, ts, payload}. FlyWire root ids never travel as JSON numbers.",
+  "type": "object",
+  "required": ["type", "v", "ts", "payload"],
+  "additionalProperties": false,
+  "properties": {
+    "type": { "type": "string" },
+    "v": { "const": 1 },
+    "ts": { "type": "number", "description": "sender clock, ms since epoch" },
+    "payload": { "type": "object" }
+  },
+  "oneOf": [
+    { "properties": { "type": { "const": "fly.hello" }, "payload": { "$ref": "#/$defs/FlyHello" } } },
+    { "properties": { "type": { "const": "fly.frame" }, "payload": { "$ref": "#/$defs/FlyFrame" } } },
+    { "properties": { "type": { "const": "fly.run_end" }, "payload": { "$ref": "#/$defs/FlyRunEnd" } } },
+    { "properties": { "type": { "const": "fly.stats" }, "payload": { "$ref": "#/$defs/FlyStats" } } },
+    { "properties": { "type": { "const": "fly.status" }, "payload": { "$ref": "#/$defs/FlyStatus" } } },
+    { "properties": { "type": { "const": "dopamine.event" }, "payload": { "$ref": "#/$defs/DopamineEvent" } } },
+    { "properties": { "type": { "const": "human.input" }, "payload": { "$ref": "#/$defs/HumanInput" } } },
+    { "properties": { "type": { "const": "lab.command" }, "payload": { "$ref": "#/$defs/LabCommand" } } },
+    { "properties": { "type": { "const": "leaderboard.update" }, "payload": { "$ref": "#/$defs/LeaderboardUpdate" } } }
+  ],
+  "$defs": {
+    "FlyHello": {
+      "type": "object",
+      "required": ["workerId", "connectome", "neurons", "engineVersion", "transducerVersion", "generation", "bioMsPerFrame", "groups"],
+      "additionalProperties": false,
+      "properties": {
+        "workerId": { "type": "string" },
+        "connectome": { "type": "string" },
+        "neurons": { "type": "integer" },
+        "engineVersion": { "type": "integer" },
+        "transducerVersion": { "type": "integer" },
+        "generation": { "type": "integer" },
+        "bioMsPerFrame": { "type": "number" },
+        "gpu": { "type": "string" },
+        "groups": { "type": "array", "items": { "type": "string" }, "description": "names of the activity groups, in the order used by FlyFrame.activity" }
+      }
+    },
+    "FlyFrame": {
+      "type": "object",
+      "required": ["seed", "state", "gf", "jump", "theta", "thetaDot", "rates", "activity"],
+      "additionalProperties": false,
+      "properties": {
+        "seed": { "type": "integer" },
+        "state": { "type": "array", "items": { "type": "integer" }, "description": "canonical dino-core state (stateToInts)" },
+        "gf": { "type": "integer", "description": "Giant Fiber spikes during this frame" },
+        "jump": { "type": "boolean", "description": "JUMP key state decided by the motor transducer" },
+        "theta": { "type": "number" },
+        "thetaDot": { "type": "number" },
+        "rates": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2, "description": "[LC4, LPLC2] commanded rate in Hz" },
+        "activity": { "type": "array", "items": { "type": "integer" }, "description": "spikes per activity group during this frame" },
+        "dopamine": { "type": "array", "items": { "type": "number" }, "description": "optional [reward, punishment] signal" }
+      }
+    },
+    "FlyRunEnd": {
+      "type": "object",
+      "required": ["seed", "generation", "score", "frames", "cleared", "deathType", "jumps", "actions"],
+      "additionalProperties": false,
+      "properties": {
+        "seed": { "type": "integer" },
+        "generation": { "type": "integer" },
+        "score": { "type": "integer" },
+        "frames": { "type": "integer" },
+        "cleared": { "type": "integer" },
+        "deathType": { "type": "integer" },
+        "jumps": { "type": "integer" },
+        "actions": { "type": "array", "items": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 } }
+      }
+    },
+    "FlyStats": {
+      "type": "object",
+      "required": ["generation", "gamesPlayed", "bestScore", "meanScoreRecent", "totalJumps", "learningCurve"],
+      "additionalProperties": false,
+      "properties": {
+        "generation": { "type": "integer" },
+        "gamesPlayed": { "type": "integer" },
+        "bestScore": { "type": "integer" },
+        "meanScoreRecent": { "type": "number" },
+        "totalJumps": { "type": "integer" },
+        "totalDeaths": { "type": "integer" },
+        "realtimeFactor": { "type": "number" },
+        "learningCurve": {
+          "type": "array",
+          "items": { "type": "object", "required": ["generation", "heldoutMean"], "properties": { "generation": { "type": "integer" }, "heldoutMean": { "type": "number" } } }
+        }
+      }
+    },
+    "FlyStatus": {
+      "type": "object",
+      "required": ["online"],
+      "additionalProperties": false,
+      "properties": { "online": { "type": "boolean" }, "generation": { "type": "integer" } }
+    },
+    "DopamineEvent": {
+      "type": "object",
+      "required": ["kind", "magnitude", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "enum": ["reward", "punish"] },
+        "magnitude": { "type": "number", "minimum": 0 },
+        "source": { "enum": ["game", "human_button", "hardware"] },
+        "seed": { "type": "integer" },
+        "frame": { "type": "integer" }
+      }
+    },
+    "HumanInput": {
+      "type": "object",
+      "required": ["source", "action"],
+      "additionalProperties": false,
+      "properties": { "source": { "enum": ["keyboard", "touch", "pose"] }, "action": { "enum": ["jump", "duck", "release"] } }
+    },
+    "LabCommand": {
+      "type": "object",
+      "required": ["command"],
+      "additionalProperties": false,
+      "properties": {
+        "command": { "enum": ["start", "stop", "set_seed", "set_generation", "reward", "punish"] },
+        "value": { "type": "number" }
+      }
+    },
+    "LeaderboardUpdate": {
+      "type": "object",
+      "required": ["humans", "fly"],
+      "additionalProperties": false,
+      "properties": {
+        "humans": { "type": "array", "items": { "type": "object", "required": ["name", "score"], "properties": { "name": { "type": "string" }, "score": { "type": "integer" } } } },
+        "fly": { "type": "array", "items": { "type": "object", "required": ["generation", "bestScore"], "properties": { "generation": { "type": "integer" }, "bestScore": { "type": "integer" } } } },
+        "flyPercentile": { "type": "number" }
+      }
+    }
+  }
+}

@@ -1,0 +1,267 @@
+:root {
+  --paper: #f7f7f7;
+  --ink: #535353;
+  --faint: #d8d8d8;
+  --accent: #ff5a1f;
+  color-scheme: light dark;
+  font-family: ui-monospace, "Cascadia Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 15px;
+  line-height: 1.55;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #16161a;
+    --ink: #e8e8e8;
+    --faint: #3a3a42;
+  }
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+}
+header,
+main,
+footer {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 24px;
+  padding-top: 18px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--ink);
+}
+.brand {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-decoration: none;
+  color: var(--ink);
+}
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+nav a {
+  color: var(--ink);
+  text-decoration: none;
+  padding: 2px 0;
+  border-bottom: 2px solid transparent;
+}
+nav a.active,
+nav a:hover {
+  border-bottom-color: var(--accent);
+}
+h1 {
+  font-size: 24px;
+  margin: 28px 0 8px;
+}
+h2 {
+  font-size: 16px;
+  margin: 28px 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.lede {
+  max-width: 70ch;
+}
+.hint,
+small,
+figcaption {
+  color: color-mix(in srgb, var(--ink) 70%, var(--paper));
+  font-size: 13px;
+}
+.accent {
+  color: var(--accent);
+}
+.headline {
+  font-size: 20px;
+}
+.stage {
+  position: relative;
+  touch-action: manipulation;
+  user-select: none;
+  cursor: pointer;
+}
+.game-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 1;
+  image-rendering: pixelated;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+}
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  background: color-mix(in srgb, var(--paper) 55%, transparent);
+  font-weight: 700;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  margin: 10px 0;
+}
+input,
+button {
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  padding: 4px 8px;
+}
+button {
+  cursor: pointer;
+}
+button:hover {
+  border-color: var(--accent);
+}
+button.reward {
+  border-color: var(--accent);
+}
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--ink);
+  vertical-align: middle;
+}
+.dot.on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+.stats {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 16px;
+  margin: 12px 0;
+}
+.stats dd {
+  margin: 0;
+  font-weight: 700;
+}
+.board {
+  padding-left: 28px;
+}
+.board li {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dashed var(--faint);
+  padding: 2px 0;
+}
+.board li.below-fly span {
+  opacity: 0.6;
+}
+.brainmap {
+  width: 100%;
+  height: auto;
+  border: 2px solid var(--ink);
+}
+.brainmap .node {
+  fill: var(--accent);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+.brainmap .edge {
+  stroke: var(--faint);
+  stroke-width: 2;
+}
+.brainmap .edge.hot {
+  stroke: var(--accent);
+}
+.brainmap .node-label {
+  font-size: 9px;
+  fill: var(--ink);
+}
+.brainmap .node-value {
+  font-size: 10px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+.brainmap .jump {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+.brainmap .jump.on {
+  fill: var(--accent);
+}
+.brainmap .jump-label {
+  font-size: 10px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+.traces figure {
+  margin: 10px 0;
+}
+.sparkline {
+  max-width: 100%;
+  height: auto;
+  border-bottom: 1px solid var(--faint);
+}
+.sparkline-empty {
+  font-size: 13px;
+  padding: 12px 0;
+  opacity: 0.7;
+}
+.events {
+  padding-left: 18px;
+  font-size: 13px;
+}
+pre {
+  overflow-x: auto;
+  border: 1px dashed var(--faint);
+  padding: 8px;
+  font-size: 12px;
+}
+.prose {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.prose img {
+  max-width: 100%;
+  height: auto;
+  background: #fff;
+}
+.prose table {
+  border-collapse: collapse;
+  display: block;
+  overflow-x: auto;
+  font-size: 12px;
+}
+.prose th,
+.prose td {
+  border: 1px solid var(--faint);
+  padding: 2px 6px;
+}
+footer {
+  margin-top: 40px;
+  padding-top: 12px;
+  padding-bottom: 28px;
+  border-top: 2px solid var(--ink);
+  font-size: 12px;
+}
+footer a {
+  color: var(--accent);
+}
