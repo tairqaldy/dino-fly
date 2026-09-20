@@ -1,0 +1,100 @@
+# Decisions
+
+ADR-style log. Each entry: context → decision (the default we proceed with) → status. **Open** entries are
+questions for Tair; work continues with the stated default until he overrides it.
+
+The second half of this file is the **forking-paths log**: every analysis choice, and whether it was made
+before or after seeing the data it affects.
+
+---
+
+## D1 — Run the brain natively on Windows (not WSL2) · open
+
+The brief assumes "laptop (WSL2, NVIDIA)". The machine has no Ubuntu WSL distro (only `docker-desktop`); PyTorch
+ships CUDA 13 wheels for native Windows and the RTX 5060 (Blackwell) works with them.
+**Default:** native Windows now, no system changes; all code stays cross-platform (paths, LF line endings, no
+Triton dependency) so WSL2/Linux works unchanged later. **Ask:** do you want a WSL2 Ubuntu setup anyway (e.g. for
+`torch.compile`)?
+
+## D2 — Validate on connectome v630, operate on v783 · decided
+
+Every published reference number of Shiu et al. 2024 (MN9 vs. sugar-GRN rate, example spike files) was produced
+with FlyWire materialization **630** (127,400 neurons). Nothing is published for 783. Root IDs differ between the
+two. **Decision:** the correctness test reproduces the v630 results with our engine; all dino-fly work then uses
+v783 and reports our own v783 numbers next to it.
+
+## D3 — Annotation table: version pin and missing license · open
+
+`flyconnectome/flywire_annotations` has **no license file**. `main` is v3.1.0 (783 root IDs, MaleCNS-cross-checked
+types); the Schlegel et al. 2024 *Nature* version is tag v2.1.0.
+**Default:** pin v3.1.0 by commit `8587524c`; download at run time, never redistribute the table; commit only small
+derived lists of root IDs for the neuron sets we use, with citation. **Ask:** OK, or prefer v2.1.0 / asking the
+authors about licensing before the public release?
+
+## D4 — The looming transducer has one genuinely free parameter (rate scale `G`) · open
+
+No LC4/LPLC2 firing rates in Hz are published (the data are calcium imaging and GF membrane potential). The
+functional forms come from Ache et al. 2019 (LC4 ∝ angular velocity, LPLC2 Gaussian in angular size), but the
+absolute rate scale cannot be taken from the literature.
+**Default:** one global gain `G`, fixed by a biological criterion decided *before* any game is played (see
+forking-paths log), never by game score; sensitivity to `G` is reported openly on DEV seeds.
+The 42° size-tuning peak is second-hand so far (primary paper is paywalled): to be verified or labelled "our choice".
+
+## D5 — Poisson-driven neurons have no refractory period · decided
+
+In the published code every `PoissonInput` target gets `rfc = 0 ms`. **Decision:** keep this convention for all
+driven neurons (sugar GRNs, LPLC2, LC4) so that "rate r" means the same thing as in the published model.
+
+## D6 — MVP visual input is non-retinotopic · decided (limitation)
+
+LPLC2/LC4 populations of both hemispheres are driven uniformly by a parameterised looming stimulus; LC4 and LPLC2
+get equal peak rates so that the *connectome* sets their relative weight at the GF. A pixel-based motion-detector
+front end is Phase 7.
+
+## D7 — Game engine deviations from the brief · decided
+
+(a) The PRNG state lives inside `GameState`, so the signature is `step(state, input)` rather than
+`step(state, input, rng)` — same determinism, simpler replay/serialisation. (b) Own integer collision boxes; Phase 2
+pixel art is drawn to fit them. (c) Chromium's per-frame pixel rounding and `deltaTime` scaling are deliberately not
+replicated; the update order and the max-jump-height clamp are. (d) `packages/dino-core` is built in Phase 1
+(not Phase 2) because Phase 1 requires golden tests of the Python port against TS fixtures.
+`ENGINE_VERSION` is frozen before any experiment; changing physics bumps it and invalidates results.
+
+## D8 — `BIO_MS_PER_FRAME` · open
+
+The brief's default (10 ms of biological time per 60 Hz frame) makes the fly's world 1.67× faster than real time,
+which scales angular velocity (the LC4 channel) by the same factor. Real time would be ≈ 16.7 ms.
+**Default:** 10 ms as specified, as the primary condition; ≈ 16.7 ms reported as a secondary condition.
+**Ask:** which one should be the headline?
+
+## D9 — Compute bounds · decided
+
+Games are capped at `MAX_FRAMES = 10,000` (≈ 167 s of game time; capped runs are reported as censored). Phase 1
+experiments run in a fixed priority order within a ≈ 6–8 h GPU budget; whatever is not reached is reported as
+"not yet measured". Headline numbers always use dt = 0.1 ms.
+
+## D10 — What "GF silenced" means · decided
+
+The published silencing (zero the neuron's *outgoing* weights) does not stop the GF from spiking, and our motor
+readout *is* the GF spike. **Decision:** the control is "GF cannot spike" (Kir2.1-like ablation); the published
+output-zeroing variant is also run and reported.
+
+## D11 — Throughput expectation · decided
+
+The brief expects the PyTorch backend to run "well above real time". The reference PyTorch implementation
+(`eonsystemspbc/fly-brain`) measures 0.10–0.18× real time on an RTX 4070. We built an event-driven engine instead
+and report measured numbers (see `docs/PROGRESS.md`); fast paths must pass a bitwise preflight against the
+canonical eager engine.
+
+## D12 — Pushing to the public repository · decided
+
+Commits are pushed to `origin/main` at the end of each phase (approved with the Phase 0/1 plan).
+
+---
+
+# Forking-paths log
+
+| # | Choice | Made | Before / after seeing the affected data |
+|---|---|---|---|
+| F1 | Correctness criterion for the engine: \|ours − 65.7 Hz\| ≤ 3 Hz at 100 Hz and every point of the published 20-point curve within max(3 Hz, 3·SE) | Phase 0 plan | before |
+| F2 | Seed sets (`HELDOUT_100 ⊂ HELDOUT_200`, DEV, TRAIN ranges) | Phase 0 | before |
