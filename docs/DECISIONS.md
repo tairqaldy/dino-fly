@@ -90,6 +90,39 @@ canonical eager engine.
 
 Commits are pushed to `origin/main` at the end of each phase (approved with the Phase 0/1 plan).
 
+## D13 — Visual context for the mushroom body is a crude hand-written code · open
+
+KC→MBON plasticity needs Kenyon-cell activity that depends on the situation. LC4 / LPLC2 have no synapse onto any
+Kenyon cell; 265 other visual projection neurons (aMe12, MTe32, MTe30, LTe25, …) do. **Default:** those 265 neurons,
+sorted by root ID, are split into 9 groups = obstacle class (3) × proximity (3); exactly one group is driven per
+frame at a rate fixed by a sparseness criterion (≥ 10 % of the recipient KCs respond), never by score
+(`flybrain/transducer/context.py`). This is the weakest link of Phase 4 biologically — a pixel-based front end
+(Phase 7) should replace it. **Ask:** acceptable as a first falsifiable stand-in?
+
+## D14 — Plasticity rule details that are ours · open
+
+(a) Eligibility uses `pre · (1 + post)` so that learning also works when the MBON is silent (postsynaptic spiking is
+not required for MB plasticity, Hige et al. 2015) while still favouring coincidence; `use_post=False` gives the pure
+pre × dopamine rule. (b) The dopamine signal per MBON is the synapse-count-weighted sum of PAM/PPL1 spikes onto that
+MBON — a proxy for compartment membership, because the connectivity table has no synapse locations. (c) All brain
+columns of a training batch share one gain vector ("one fly living 32 lives in parallel"); updates are summed.
+(d) Traces and updates are evaluated once per game frame (10 ms), the traces being ≥ 100 ms.
+
+## D15 — Deployment targets · open
+
+Web: deployed to GitHub Pages because no Cloudflare credentials exist on the dev machine; Cloudflare Pages remains
+the documented target. API: Railway project, Postgres and variables are set up, but every `railway up` fails at
+"scheduling build" without a build log although the image builds and runs locally. **Ask:** please look at the
+build-log link in the Railway dashboard (plan limit?).
+
+## D16 — Reproducibility of fast paths · decided
+
+The canonical engine is the eager PyTorch path, bit-identical on CPU, GPU and under CUDA graphs, and spike-identical
+to Brian2. The active-set optimisation is exact (same spikes as dense; unit-tested). A fused-kernel path was
+prototyped with torch's jiterator but not adopted: it was not faster than eager at B = 64 on this GPU and its
+fused multiply-add breaks bitwise equality. The plastic (KC→MBON) path accumulates floats, so learning runs are
+deterministic on CPU but only statistically reproducible on GPU.
+
 ---
 
 # Forking-paths log
