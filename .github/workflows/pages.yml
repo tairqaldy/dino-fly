@@ -1,0 +1,46 @@
+name: Deploy web (GitHub Pages)
+
+# Static build of apps/web. Cloudflare Pages is the documented primary target (docs/DEPLOY.md); GitHub Pages needs no
+# extra credentials, so it is what CI can deploy on its own.
+on:
+  push:
+    branches: [main]
+    paths: ["apps/web/**", "packages/**", "docs/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @dino-fly/web build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_FLY_WS: ${{ vars.VITE_FLY_WS }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

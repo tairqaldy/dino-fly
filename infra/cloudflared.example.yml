@@ -1,0 +1,8 @@
+# Optional Cloudflare Tunnel for the LOCAL dashboard feed (the worker itself only ever connects outbound).
+# cloudflared tunnel create dino-fly-lab && cloudflared tunnel route dns dino-fly-lab lab.<your-domain>
+tunnel: dino-fly-lab
+credentials-file: /home/USER/.cloudflared/<TUNNEL-ID>.json
+ingress:
+  - hostname: lab.example.com
+    service: ws://localhost:8765
+  - service: http_status:404
