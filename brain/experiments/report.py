@@ -155,10 +155,10 @@ def render_benchmark() -> str:
     return "\n".join(lines)
 
 
-def _later(name: str) -> Callable[[], str]:
+def _later(name: str, module_name: str | None = None) -> Callable[[], str]:
     def render() -> str:
         try:
-            module = __import__(f"experiments.{name}", fromlist=["render_report"])
+            module = __import__(f"experiments.{module_name or name}", fromlist=["render_report"])
         except ImportError:
             return NOT_MEASURED
         fn = getattr(module, "render_report", None)
@@ -174,7 +174,12 @@ RENDERERS: dict[str, Callable[[], str]] = {
     "looming_gf": _later("looming_gf"),
     "naive_play": _later("naive_play"),
     "mbon_influence": _later("mbon_influence"),
+    "mb_drive": _later("mb_drive"),
+    "mb_drive_kc": _later("mb_drive_kc", "mb_drive"),
+    "da_burst": _later("da_burst"),
+    "kc_volley": _later("kc_volley"),
     "learning": _later("learning"),
+    "learning_h2": _later("learning_h2", "learning"),
     "crowd_teaching": _later("crowd_teaching"),
 }
 

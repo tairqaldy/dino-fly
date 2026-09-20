@@ -138,6 +138,7 @@ def play_games(
     def start(col: int) -> None:
         if not queue:
             games[col] = None
+            net.reset(columns=np.array([col]))  # an idle column must be silent: nothing of its last game may linger
             return
         seed = queue.pop(0)
         games[col] = _Game(seed, noise_seed, motor)
@@ -170,11 +171,17 @@ def play_games(
         rates = [np.tile(lc4_rate, (n_lc4, 1)), np.tile(lplc2_rate, (n_lplc2, 1))]
         if learner is not None:
             rates.append(learner.extra_rates(games, views, tails))
+            gain = learner.sensory_gain()  # H2 only (a documented model assumption); None under H1
+            if gain is not None:
+                rates[0] = rates[0] * gain
+                rates[1] = rates[1] * gain
         drive.set_rates(np.concatenate(rates, axis=0))
         res = net.run(steps_per_frame, record=None, watch=watch)
         gf = res.watch_counts[:n_watch_gf].sum(axis=0)
         if learner is not None:
-            learner.frame(res.watch_counts[n_watch_gf:])
+            seen = np.array(res.watch_counts[n_watch_gf:])
+            seen[:, [g is None for g in games]] = 0  # columns without a game never teach
+            learner.frame(seen)
 
         for col, g in enumerate(games):
             if g is None:

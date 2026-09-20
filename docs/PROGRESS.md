@@ -57,10 +57,12 @@ Results: see `docs/RESEARCH.md` (sections stay "not yet measured" until their JS
 Observational replay through dopamine and the death curriculum are implemented and unit-tested on the synthetic
 connectome; the ablation needs real human runs from the leaderboard (`GET /api/runs/human`).
 
-## Phase 6 — Hardware · written, not yet tested on hardware
+## Phase 6 — Hardware · compiles, not yet tested on hardware
 
-ESP32 stats display + XIAO ESP32S3 MJPEG camera firmware, laptop pose pipeline (detector unit-tested). Nothing has
-been compiled with PlatformIO or flashed yet.
+ESP32 stats display + XIAO ESP32S3 MJPEG camera firmware, laptop pose pipeline (detector unit-tested). Both firmware
+projects **build** with PlatformIO Core 6.2.0 (`uvx --from platformio pio run -d firmware/<project>`, 2026-09-21, no
+warnings in our code): stats display 1,018,901 bytes of flash (77.7 % of the default partition) and 48,876 bytes of RAM;
+pose camera 757,501 bytes (22.7 %) and 47,296 bytes. Nothing has been flashed or run on a board yet.
 
 ## Next
 

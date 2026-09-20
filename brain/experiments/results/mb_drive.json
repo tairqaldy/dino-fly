@@ -1,0 +1,1696 @@
+{
+  "experiment": "mb_drive",
+  "protocol": {
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "obstacle_classes": [
+      1,
+      1,
+      1,
+      1,
+      0,
+      0,
+      1,
+      0,
+      1
+    ],
+    "frames_in_view": [
+      81,
+      81,
+      81,
+      81,
+      83,
+      83,
+      81,
+      83,
+      81
+    ],
+    "code_seed": 783,
+    "n_context_vpns": 265,
+    "n_recipient_kcs": 427,
+    "n_visual_mbons": 85,
+    "mbon_criterion_hz": 1.0,
+    "max_p_drop": 0.2,
+    "max_shift_frames": 3.0,
+    "transducer_gain_hz": 3.0
+  },
+  "reference_looming_only": {
+    "gf_spikes": 8,
+    "columns_with_gf_spike": 8,
+    "p_gf_spike": 0.8888888888888888,
+    "gf_first_spike_frames_before_crash_median": 8.0,
+    "dan_spikes_per_approach": 0.0,
+    "kcs_active_per_approach": 0.0,
+    "mbons_active_per_approach": 0.0,
+    "visual_mbon_rate_hz_last_300ms": 0.0,
+    "top_mbon_types_hz_last_300ms": [
+      [
+        "MBON01",
+        0.0
+      ],
+      [
+        "MBON02",
+        0.0
+      ],
+      [
+        "MBON03",
+        0.0
+      ],
+      [
+        "MBON04",
+        0.0
+      ]
+    ],
+    "n_active_neurons": 15124
+  },
+  "rows": [
+    {
+      "min_kc_fraction": 0.05,
+      "n_neurons": 47,
+      "code": "class_only",
+      "ramp_deg": 0.0,
+      "rate_hz": 100.0,
+      "context_only": {
+        "gf_spikes": 0,
+        "columns_with_gf_spike": 0,
+        "p_gf_spike": 0.0,
+        "gf_first_spike_frames_before_crash_median": null,
+        "dan_spikes_per_approach": 0.0,
+        "kcs_active_per_approach": 106.0,
+        "mbons_active_per_approach": 5.333333333333333,
+        "visual_mbon_rate_hz_last_300ms": 0.19172113289760348,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            5.74
+          ],
+          [
+            "MBON09",
+            1.02
+          ],
+          [
+            "MBON05",
+            0.19
+          ],
+          [
+            "MBON33",
+            0.19
+          ]
+        ],
+        "n_active_neurons": 57533
+      },
+      "looming_and_context": {
+        "gf_spikes": 0,
+        "columns_with_gf_spike": 0,
+        "p_gf_spike": 0.0,
+        "gf_first_spike_frames_before_crash_median": null,
+        "dan_spikes_per_approach": 0.0,
+        "kcs_active_per_approach": 106.0,
+        "mbons_active_per_approach": 5.555555555555555,
+        "visual_mbon_rate_hz_last_300ms": 0.21350762527233116,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            5.74
+          ],
+          [
+            "MBON09",
+            1.3
+          ],
+          [
+            "MBON05",
+            0.37
+          ],
+          [
+            "MBON33",
+            0.37
+          ]
+        ],
+        "n_active_neurons": 62666
+      },
+      "gf_spike_time_shift_frames": null,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.05,
+      "n_neurons": 47,
+      "code": "class_only",
+      "ramp_deg": 0.0,
+      "rate_hz": 200.0,
+      "context_only": {
+        "gf_spikes": 0,
+        "columns_with_gf_spike": 0,
+        "p_gf_spike": 0.0,
+        "gf_first_spike_frames_before_crash_median": null,
+        "dan_spikes_per_approach": 107.55555555555556,
+        "kcs_active_per_approach": 193.66666666666666,
+        "mbons_active_per_approach": 22.666666666666668,
+        "visual_mbon_rate_hz_last_300ms": 5.769063180827887,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            44.26
+          ],
+          [
+            "MBON09",
+            32.69
+          ],
+          [
+            "MBON05",
+            26.85
+          ],
+          [
+            "MBON33",
+            24.07
+          ]
+        ],
+        "n_active_neurons": 81216
+      },
+      "looming_and_context": {
+        "gf_spikes": 0,
+        "columns_with_gf_spike": 0,
+        "p_gf_spike": 0.0,
+        "gf_first_spike_frames_before_crash_median": null,
+        "dan_spikes_per_approach": 106.77777777777777,
+        "kcs_active_per_approach": 351.55555555555554,
+        "mbons_active_per_approach": 25.333333333333332,
+        "visual_mbon_rate_hz_last_300ms": 5.516339869281046,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            43.89
+          ],
+          [
+            "MBON09",
+            31.67
+          ],
+          [
+            "MBON33",
+            24.26
+          ],
+          [
+            "MBON05",
+            22.04
+          ]
+        ],
+        "n_active_neurons": 87600
+      },
+      "gf_spike_time_shift_frames": null,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.05,
+      "n_neurons": 47,
+      "code": "class_only",
+      "ramp_deg": 0.0,
+      "rate_hz": 300.0,
+      "context_only": {
+        "gf_spikes": 1,
+        "columns_with_gf_spike": 1,
+        "p_gf_spike": 0.1111111111111111,
+        "gf_first_spike_frames_before_crash_median": 67.0,
+        "dan_spikes_per_approach": 97.44444444444444,
+        "kcs_active_per_approach": 219.55555555555554,
+        "mbons_active_per_approach": 21.555555555555557,
+        "visual_mbon_rate_hz_last_300ms": 6.5359477124183005,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            70.0
+          ],
+          [
+            "MBON09",
+            44.17
+          ],
+          [
+            "MBON33",
+            30.0
+          ],
+          [
+            "MBON11",
+            17.04
+          ]
+        ],
+        "n_active_neurons": 94560
+      },
+      "looming_and_context": {
+        "gf_spikes": 2,
+        "columns_with_gf_spike": 1,
+        "p_gf_spike": 0.1111111111111111,
+        "gf_first_spike_frames_before_crash_median": 67.0,
+        "dan_spikes_per_approach": 98.44444444444444,
+        "kcs_active_per_approach": 219.11111111111111,
+        "mbons_active_per_approach": 20.666666666666668,
+        "visual_mbon_rate_hz_last_300ms": 5.869281045751634,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            70.0
+          ],
+          [
+            "MBON09",
+            40.74
+          ],
+          [
+            "MBON33",
+            30.19
+          ],
+          [
+            "MBON32",
+            12.78
+          ]
+        ],
+        "n_active_neurons": 95809
+      },
+      "gf_spike_time_shift_frames": 59.0,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.05,
+      "n_neurons": 47,
+      "code": "class_only",
+      "ramp_deg": 30.0,
+      "rate_hz": 100.0,
+      "context_only": {
+        "gf_spikes": 0,
+        "columns_with_gf_spike": 0,
+        "p_gf_spike": 0.0,
+        "gf_first_spike_frames_before_crash_median": null,
+        "dan_spikes_per_approach": 0.0,
+        "kcs_active_per_approach": 69.22222222222223,
+        "mbons_active_per_approach": 3.888888888888889,
+        "visual_mbon_rate_hz_last_300ms": 0.2047930283224401,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON05",
+            2.22
+          ],
+          [
+            "MBON27",
+            2.04
+          ],
+          [
+            "MBON09",
+            1.85
+          ],
+          [
+            "MBON30",
+            0.37
+          ]
+        ],
+        "n_active_neurons": 54649
+      },
+      "looming_and_context": {
+        "gf_spikes": 0,
+        "columns_with_gf_spike": 0,
+        "p_gf_spike": 0.0,
+        "gf_first_spike_frames_before_crash_median": null,
+        "dan_spikes_per_approach": 0.0,
+        "kcs_active_per_approach": 69.0,
+        "mbons_active_per_approach": 3.888888888888889,
+        "visual_mbon_rate_hz_last_300ms": 0.19172113289760348,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON05",
+            2.04
+          ],
+          [
+            "MBON27",
+            2.04
+          ],
+          [
+            "MBON09",
+            1.67
+          ],
+          [
+            "MBON30",
+            0.37
+          ]
+        ],
+        "n_active_neurons": 59859
+      },
+      "gf_spike_time_shift_frames": null,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.05,
+      "n_neurons": 47,
+      "code": "class_only",
+      "ramp_deg": 30.0,
+      "rate_hz": 200.0,
+      "context_only": {
+        "gf_spikes": 0,
+        "columns_with_gf_spike": 0,
+        "p_gf_spike": 0.0,
+        "gf_first_spike_frames_before_crash_median": null,
+        "dan_spikes_per_approach": 11.11111111111111,
+        "kcs_active_per_approach": 149.88888888888889,
+        "mbons_active_per_approach": 15.777777777777779,
+        "visual_mbon_rate_hz_last_300ms": 1.943355119825708,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            28.7
+          ],
+          [
+            "MBON09",
+            10.0
+          ],
+          [
+            "MBON33",
+            9.44
+          ],
+          [
+            "MBON05",
+            4.44
+          ]
+        ],
+        "n_active_neurons": 72050
+      },
+      "looming_and_context": {
+        "gf_spikes": 0,
+        "columns_with_gf_spike": 0,
+        "p_gf_spike": 0.0,
+        "gf_first_spike_frames_before_crash_median": null,
+        "dan_spikes_per_approach": 11.222222222222221,
+        "kcs_active_per_approach": 151.0,
+        "mbons_active_per_approach": 15.88888888888889,
+        "visual_mbon_rate_hz_last_300ms": 1.9651416122004357,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            28.52
+          ],
+          [
+            "MBON09",
+            10.19
+          ],
+          [
+            "MBON33",
+            8.7
+          ],
+          [
+            "MBON32",
+            4.63
+          ]
+        ],
+        "n_active_neurons": 75502
+      },
+      "gf_spike_time_shift_frames": null,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.05,
+      "n_neurons": 47,
+      "code": "class_only",
+      "ramp_deg": 30.0,
+      "rate_hz": 300.0,
+      "context_only": {
+        "gf_spikes": 0,
+        "columns_with_gf_spike": 0,
+        "p_gf_spike": 0.0,
+        "gf_first_spike_frames_before_crash_median": null,
+        "dan_spikes_per_approach": 26.11111111111111,
+        "kcs_active_per_approach": 197.33333333333334,
+        "mbons_active_per_approach": 19.333333333333332,
+        "visual_mbon_rate_hz_last_300ms": 4.091503267973856,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            53.52
+          ],
+          [
+            "MBON09",
+            25.83
+          ],
+          [
+            "MBON33",
+            19.63
+          ],
+          [
+            "MBON32",
+            9.26
+          ]
+        ],
+        "n_active_neurons": 73835
+      },
+      "looming_and_context": {
+        "gf_spikes": 1,
+        "columns_with_gf_spike": 1,
+        "p_gf_spike": 0.1111111111111111,
+        "gf_first_spike_frames_before_crash_median": 14.0,
+        "dan_spikes_per_approach": 24.666666666666668,
+        "kcs_active_per_approach": 195.11111111111111,
+        "mbons_active_per_approach": 19.22222222222222,
+        "visual_mbon_rate_hz_last_300ms": 4.004357298474946,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            52.78
+          ],
+          [
+            "MBON09",
+            25.09
+          ],
+          [
+            "MBON33",
+            19.63
+          ],
+          [
+            "MBON32",
+            9.26
+          ]
+        ],
+        "n_active_neurons": 77239
+      },
+      "gf_spike_time_shift_frames": 6.0,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.1,
+      "n_neurons": 30,
+      "code": "class_only",
+      "ramp_deg": 0.0,
+      "rate_hz": 100.0,
+      "context_only": {
+        "gf_spikes": 0,
+        "columns_with_gf_spike": 0,
+        "p_gf_spike": 0.0,
+        "gf_first_spike_frames_before_crash_median": null,
+        "dan_spikes_per_approach": 0.0,
+        "kcs_active_per_approach": 78.77777777777777,
+        "mbons_active_per_approach": 3.6666666666666665,
+        "visual_mbon_rate_hz_last_300ms": 0.08714596949891068,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            2.59
+          ],
+          [
+            "MBON09",
+            0.56
+          ],
+          [
+            "MBON01",
+            0.0
+          ],
+          [
+            "MBON02",
+            0.0
+          ]
+        ],
+        "n_active_neurons": 44744
+      },
+      "looming_and_context": {
+        "gf_spikes": 0,
+        "columns_with_gf_spike": 0,
+        "p_gf_spike": 0.0,
+        "gf_first_spike_frames_before_crash_median": null,
+        "dan_spikes_per_approach": 0.0,
+        "kcs_active_per_approach": 78.77777777777777,
+        "mbons_active_per_approach": 3.6666666666666665,
+        "visual_mbon_rate_hz_last_300ms": 0.08714596949891068,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            2.59
+          ],
+          [
+            "MBON09",
+            0.56
+          ],
+          [
+            "MBON01",
+            0.0
+          ],
+          [
+            "MBON02",
+            0.0
+          ]
+        ],
+        "n_active_neurons": 51024
+      },
+      "gf_spike_time_shift_frames": null,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.1,
+      "n_neurons": 30,
+      "code": "class_only",
+      "ramp_deg": 0.0,
+      "rate_hz": 200.0,
+      "context_only": {
+        "gf_spikes": 0,
+        "columns_with_gf_spike": 0,
+        "p_gf_spike": 0.0,
+        "gf_first_spike_frames_before_crash_median": null,
+        "dan_spikes_per_approach": 0.1111111111111111,
+        "kcs_active_per_approach": 130.0,
+        "mbons_active_per_approach": 11.88888888888889,
+        "visual_mbon_rate_hz_last_300ms": 1.4684095860566448,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            31.85
+          ],
+          [
+            "MBON32",
+            6.67
+          ],
+          [
+            "MBON09",
+            5.74
+          ],
+          [
+            "MBON31",
+            3.7
+          ]
+        ],
+        "n_active_neurons": 66692
+      },
+      "looming_and_context": {
+        "gf_spikes": 0,
+        "columns_with_gf_spike": 0,
+        "p_gf_spike": 0.0,
+        "gf_first_spike_frames_before_crash_median": null,
+        "dan_spikes_per_approach": 0.1111111111111111,
+        "kcs_active_per_approach": 129.77777777777777,
+        "mbons_active_per_approach": 11.88888888888889,
+        "visual_mbon_rate_hz_last_300ms": 1.477124183006536,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            31.85
+          ],
+          [
+            "MBON32",
+            7.04
+          ],
+          [
+            "MBON09",
+            5.74
+          ],
+          [
+            "MBON31",
+            3.7
+          ]
+        ],
+        "n_active_neurons": 70170
+      },
+      "gf_spike_time_shift_frames": null,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.1,
+      "n_neurons": 30,
+      "code": "class_only",
+      "ramp_deg": 0.0,
+      "rate_hz": 300.0,
+      "context_only": {
+        "gf_spikes": 0,
+        "columns_with_gf_spike": 0,
+        "p_gf_spike": 0.0,
+        "gf_first_spike_frames_before_crash_median": null,
+        "dan_spikes_per_approach": 45.666666666666664,
+        "kcs_active_per_approach": 170.55555555555554,
+        "mbons_active_per_approach": 22.555555555555557,
+        "visual_mbon_rate_hz_last_300ms": 4.40958605664488,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            53.89
+          ],
+          [
+            "MBON09",
+            27.31
+          ],
+          [
+            "MBON33",
+            26.11
+          ],
+          [
+            "MBON32",
+            12.22
+          ]
+        ],
+        "n_active_neurons": 89449
+      },
+      "looming_and_context": {
+        "gf_spikes": 2,
+        "columns_with_gf_spike": 2,
+        "p_gf_spike": 0.2222222222222222,
+        "gf_first_spike_frames_before_crash_median": 8.5,
+        "dan_spikes_per_approach": 37.55555555555556,
+        "kcs_active_per_approach": 169.55555555555554,
+        "mbons_active_per_approach": 22.22222222222222,
+        "visual_mbon_rate_hz_last_300ms": 3.9389978213507626,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            53.52
+          ],
+          [
+            "MBON33",
+            24.63
+          ],
+          [
+            "MBON09",
+            24.44
+          ],
+          [
+            "MBON32",
+            12.04
+          ]
+        ],
+        "n_active_neurons": 91154
+      },
+      "gf_spike_time_shift_frames": 0.5,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.1,
+      "n_neurons": 30,
+      "code": "class_only",
+      "ramp_deg": 30.0,
+      "rate_hz": 100.0,
+      "context_only": {
+        "gf_spikes": 0,
+        "columns_with_gf_spike": 0,
+        "p_gf_spike": 0.0,
+        "gf_first_spike_frames_before_crash_median": null,
+        "dan_spikes_per_approach": 0.0,
+        "kcs_active_per_approach": 50.22222222222222,
+        "mbons_active_per_approach": 2.111111111111111,
+        "visual_mbon_rate_hz_last_300ms": 0.08278867102396514,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            1.11
+          ],
+          [
+            "MBON09",
+            1.02
+          ],
+          [
+            "MBON05",
+            0.37
+          ],
+          [
+            "MBON01",
+            0.0
+          ]
+        ],
+        "n_active_neurons": 42753
+      },
+      "looming_and_context": {
+        "gf_spikes": 0,
+        "columns_with_gf_spike": 0,
+        "p_gf_spike": 0.0,
+        "gf_first_spike_frames_before_crash_median": null,
+        "dan_spikes_per_approach": 0.0,
+        "kcs_active_per_approach": 50.22222222222222,
+        "mbons_active_per_approach": 2.111111111111111,
+        "visual_mbon_rate_hz_last_300ms": 0.08278867102396514,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            1.11
+          ],
+          [
+            "MBON09",
+            1.02
+          ],
+          [
+            "MBON05",
+            0.37
+          ],
+          [
+            "MBON01",
+            0.0
+          ]
+        ],
+        "n_active_neurons": 49234
+      },
+      "gf_spike_time_shift_frames": null,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.1,
+      "n_neurons": 30,
+      "code": "class_only",
+      "ramp_deg": 30.0,
+      "rate_hz": 200.0,
+      "context_only": {
+        "gf_spikes": 0,
+        "columns_with_gf_spike": 0,
+        "p_gf_spike": 0.0,
+        "gf_first_spike_frames_before_crash_median": null,
+        "dan_spikes_per_approach": 0.3333333333333333,
+        "kcs_active_per_approach": 108.66666666666667,
+        "mbons_active_per_approach": 8.0,
+        "visual_mbon_rate_hz_last_300ms": 0.840958605664488,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            18.7
+          ],
+          [
+            "MBON09",
+            4.44
+          ],
+          [
+            "MBON32",
+            2.78
+          ],
+          [
+            "MBON31",
+            1.67
+          ]
+        ],
+        "n_active_neurons": 64927
+      },
+      "looming_and_context": {
+        "gf_spikes": 0,
+        "columns_with_gf_spike": 0,
+        "p_gf_spike": 0.0,
+        "gf_first_spike_frames_before_crash_median": null,
+        "dan_spikes_per_approach": 0.3333333333333333,
+        "kcs_active_per_approach": 108.88888888888889,
+        "mbons_active_per_approach": 8.222222222222221,
+        "visual_mbon_rate_hz_last_300ms": 0.8496732026143791,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            18.7
+          ],
+          [
+            "MBON09",
+            4.54
+          ],
+          [
+            "MBON32",
+            2.78
+          ],
+          [
+            "MBON31",
+            1.67
+          ]
+        ],
+        "n_active_neurons": 69092
+      },
+      "gf_spike_time_shift_frames": null,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.1,
+      "n_neurons": 30,
+      "code": "class_only",
+      "ramp_deg": 30.0,
+      "rate_hz": 300.0,
+      "context_only": {
+        "gf_spikes": 0,
+        "columns_with_gf_spike": 0,
+        "p_gf_spike": 0.0,
+        "gf_first_spike_frames_before_crash_median": null,
+        "dan_spikes_per_approach": 2.4444444444444446,
+        "kcs_active_per_approach": 143.11111111111111,
+        "mbons_active_per_approach": 12.222222222222221,
+        "visual_mbon_rate_hz_last_300ms": 2.104575163398693,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            39.44
+          ],
+          [
+            "MBON09",
+            11.48
+          ],
+          [
+            "MBON33",
+            9.26
+          ],
+          [
+            "MBON32",
+            8.15
+          ]
+        ],
+        "n_active_neurons": 84578
+      },
+      "looming_and_context": {
+        "gf_spikes": 1,
+        "columns_with_gf_spike": 1,
+        "p_gf_spike": 0.1111111111111111,
+        "gf_first_spike_frames_before_crash_median": 9.0,
+        "dan_spikes_per_approach": 3.6666666666666665,
+        "kcs_active_per_approach": 142.88888888888889,
+        "mbons_active_per_approach": 12.444444444444445,
+        "visual_mbon_rate_hz_last_300ms": 2.1176470588235294,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            39.26
+          ],
+          [
+            "MBON09",
+            11.76
+          ],
+          [
+            "MBON33",
+            9.26
+          ],
+          [
+            "MBON32",
+            8.33
+          ]
+        ],
+        "n_active_neurons": 86321
+      },
+      "gf_spike_time_shift_frames": 1.0,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.0,
+      "n_neurons": 265,
+      "code": "one_of_9",
+      "ramp_deg": 0.0,
+      "rate_hz": 100.0,
+      "context_only": {
+        "gf_spikes": 6,
+        "columns_with_gf_spike": 2,
+        "p_gf_spike": 0.2222222222222222,
+        "gf_first_spike_frames_before_crash_median": 17.0,
+        "dan_spikes_per_approach": 0.0,
+        "kcs_active_per_approach": 23.11111111111111,
+        "mbons_active_per_approach": 0.0,
+        "visual_mbon_rate_hz_last_300ms": 0.0,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON01",
+            0.0
+          ],
+          [
+            "MBON02",
+            0.0
+          ],
+          [
+            "MBON03",
+            0.0
+          ],
+          [
+            "MBON04",
+            0.0
+          ]
+        ],
+        "n_active_neurons": 83380
+      },
+      "looming_and_context": {
+        "gf_spikes": 14,
+        "columns_with_gf_spike": 7,
+        "p_gf_spike": 0.7777777777777778,
+        "gf_first_spike_frames_before_crash_median": 14.0,
+        "dan_spikes_per_approach": 0.0,
+        "kcs_active_per_approach": 23.11111111111111,
+        "mbons_active_per_approach": 0.0,
+        "visual_mbon_rate_hz_last_300ms": 0.0,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON01",
+            0.0
+          ],
+          [
+            "MBON02",
+            0.0
+          ],
+          [
+            "MBON03",
+            0.0
+          ],
+          [
+            "MBON04",
+            0.0
+          ]
+        ],
+        "n_active_neurons": 85890
+      },
+      "gf_spike_time_shift_frames": 6.0,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.0,
+      "n_neurons": 265,
+      "code": "one_of_9",
+      "ramp_deg": 0.0,
+      "rate_hz": 200.0,
+      "context_only": {
+        "gf_spikes": 10,
+        "columns_with_gf_spike": 4,
+        "p_gf_spike": 0.4444444444444444,
+        "gf_first_spike_frames_before_crash_median": 18.0,
+        "dan_spikes_per_approach": 0.0,
+        "kcs_active_per_approach": 56.888888888888886,
+        "mbons_active_per_approach": 2.0,
+        "visual_mbon_rate_hz_last_300ms": 0.06535947712418301,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON30",
+            1.11
+          ],
+          [
+            "MBON05",
+            0.56
+          ],
+          [
+            "MBON20",
+            0.56
+          ],
+          [
+            "MBON11",
+            0.37
+          ]
+        ],
+        "n_active_neurons": 92628
+      },
+      "looming_and_context": {
+        "gf_spikes": 22,
+        "columns_with_gf_spike": 6,
+        "p_gf_spike": 0.6666666666666666,
+        "gf_first_spike_frames_before_crash_median": 16.0,
+        "dan_spikes_per_approach": 0.0,
+        "kcs_active_per_approach": 56.77777777777778,
+        "mbons_active_per_approach": 2.111111111111111,
+        "visual_mbon_rate_hz_last_300ms": 0.06971677559912855,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON30",
+            1.11
+          ],
+          [
+            "MBON05",
+            0.56
+          ],
+          [
+            "MBON20",
+            0.56
+          ],
+          [
+            "MBON11",
+            0.37
+          ]
+        ],
+        "n_active_neurons": 92365
+      },
+      "gf_spike_time_shift_frames": 8.0,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.0,
+      "n_neurons": 265,
+      "code": "one_of_9",
+      "ramp_deg": 30.0,
+      "rate_hz": 100.0,
+      "context_only": {
+        "gf_spikes": 6,
+        "columns_with_gf_spike": 3,
+        "p_gf_spike": 0.3333333333333333,
+        "gf_first_spike_frames_before_crash_median": 15.0,
+        "dan_spikes_per_approach": 0.0,
+        "kcs_active_per_approach": 4.222222222222222,
+        "mbons_active_per_approach": 0.0,
+        "visual_mbon_rate_hz_last_300ms": 0.0,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON01",
+            0.0
+          ],
+          [
+            "MBON02",
+            0.0
+          ],
+          [
+            "MBON03",
+            0.0
+          ],
+          [
+            "MBON04",
+            0.0
+          ]
+        ],
+        "n_active_neurons": 71744
+      },
+      "looming_and_context": {
+        "gf_spikes": 17,
+        "columns_with_gf_spike": 7,
+        "p_gf_spike": 0.7777777777777778,
+        "gf_first_spike_frames_before_crash_median": 10.0,
+        "dan_spikes_per_approach": 0.0,
+        "kcs_active_per_approach": 4.222222222222222,
+        "mbons_active_per_approach": 0.0,
+        "visual_mbon_rate_hz_last_300ms": 0.0,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON01",
+            0.0
+          ],
+          [
+            "MBON02",
+            0.0
+          ],
+          [
+            "MBON03",
+            0.0
+          ],
+          [
+            "MBON04",
+            0.0
+          ]
+        ],
+        "n_active_neurons": 74333
+      },
+      "gf_spike_time_shift_frames": 2.0,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.0,
+      "n_neurons": 265,
+      "code": "one_of_9",
+      "ramp_deg": 30.0,
+      "rate_hz": 200.0,
+      "context_only": {
+        "gf_spikes": 8,
+        "columns_with_gf_spike": 2,
+        "p_gf_spike": 0.2222222222222222,
+        "gf_first_spike_frames_before_crash_median": 14.5,
+        "dan_spikes_per_approach": 0.0,
+        "kcs_active_per_approach": 20.666666666666668,
+        "mbons_active_per_approach": 0.1111111111111111,
+        "visual_mbon_rate_hz_last_300ms": 0.004357298474945534,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON05",
+            0.19
+          ],
+          [
+            "MBON01",
+            0.0
+          ],
+          [
+            "MBON02",
+            0.0
+          ],
+          [
+            "MBON03",
+            0.0
+          ]
+        ],
+        "n_active_neurons": 88344
+      },
+      "looming_and_context": {
+        "gf_spikes": 23,
+        "columns_with_gf_spike": 6,
+        "p_gf_spike": 0.6666666666666666,
+        "gf_first_spike_frames_before_crash_median": 9.5,
+        "dan_spikes_per_approach": 0.0,
+        "kcs_active_per_approach": 20.555555555555557,
+        "mbons_active_per_approach": 0.1111111111111111,
+        "visual_mbon_rate_hz_last_300ms": 0.004357298474945534,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON09",
+            0.09
+          ],
+          [
+            "MBON01",
+            0.0
+          ],
+          [
+            "MBON02",
+            0.0
+          ],
+          [
+            "MBON03",
+            0.0
+          ]
+        ],
+        "n_active_neurons": 89146
+      },
+      "gf_spike_time_shift_frames": 1.5,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.0,
+      "n_neurons": 265,
+      "code": "random_half",
+      "ramp_deg": 0.0,
+      "rate_hz": 100.0,
+      "context_only": {
+        "gf_spikes": 15,
+        "columns_with_gf_spike": 6,
+        "p_gf_spike": 0.6666666666666666,
+        "gf_first_spike_frames_before_crash_median": 78.5,
+        "dan_spikes_per_approach": 0.4444444444444444,
+        "kcs_active_per_approach": 126.22222222222223,
+        "mbons_active_per_approach": 6.333333333333333,
+        "visual_mbon_rate_hz_last_300ms": 0.17429193899782136,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON05",
+            1.85
+          ],
+          [
+            "MBON27",
+            1.67
+          ],
+          [
+            "MBON09",
+            1.48
+          ],
+          [
+            "MBON30",
+            0.37
+          ]
+        ],
+        "n_active_neurons": 97952
+      },
+      "looming_and_context": {
+        "gf_spikes": 17,
+        "columns_with_gf_spike": 6,
+        "p_gf_spike": 0.6666666666666666,
+        "gf_first_spike_frames_before_crash_median": 78.5,
+        "dan_spikes_per_approach": 0.5555555555555556,
+        "kcs_active_per_approach": 126.55555555555556,
+        "mbons_active_per_approach": 6.0,
+        "visual_mbon_rate_hz_last_300ms": 0.14814814814814814,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            1.85
+          ],
+          [
+            "MBON09",
+            1.48
+          ],
+          [
+            "MBON05",
+            1.3
+          ],
+          [
+            "MBON32",
+            0.19
+          ]
+        ],
+        "n_active_neurons": 98491
+      },
+      "gf_spike_time_shift_frames": 70.5,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.0,
+      "n_neurons": 265,
+      "code": "random_half",
+      "ramp_deg": 0.0,
+      "rate_hz": 200.0,
+      "context_only": {
+        "gf_spikes": 20,
+        "columns_with_gf_spike": 4,
+        "p_gf_spike": 0.4444444444444444,
+        "gf_first_spike_frames_before_crash_median": 78.5,
+        "dan_spikes_per_approach": 576.4444444444445,
+        "kcs_active_per_approach": 585.5555555555555,
+        "mbons_active_per_approach": 21.0,
+        "visual_mbon_rate_hz_last_300ms": 12.161220043572985,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON09",
+            36.02
+          ],
+          [
+            "MBON05",
+            31.3
+          ],
+          [
+            "MBON11",
+            30.74
+          ],
+          [
+            "MBON27",
+            30.37
+          ]
+        ],
+        "n_active_neurons": 116388
+      },
+      "looming_and_context": {
+        "gf_spikes": 24,
+        "columns_with_gf_spike": 5,
+        "p_gf_spike": 0.5555555555555556,
+        "gf_first_spike_frames_before_crash_median": 77.0,
+        "dan_spikes_per_approach": 26.88888888888889,
+        "kcs_active_per_approach": 217.55555555555554,
+        "mbons_active_per_approach": 18.666666666666668,
+        "visual_mbon_rate_hz_last_300ms": 2.065359477124183,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            33.7
+          ],
+          [
+            "MBON09",
+            12.96
+          ],
+          [
+            "MBON32",
+            8.89
+          ],
+          [
+            "MBON20",
+            3.89
+          ]
+        ],
+        "n_active_neurons": 109048
+      },
+      "gf_spike_time_shift_frames": 69.0,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.0,
+      "n_neurons": 265,
+      "code": "random_half",
+      "ramp_deg": 30.0,
+      "rate_hz": 100.0,
+      "context_only": {
+        "gf_spikes": 17,
+        "columns_with_gf_spike": 5,
+        "p_gf_spike": 0.5555555555555556,
+        "gf_first_spike_frames_before_crash_median": 71.0,
+        "dan_spikes_per_approach": 0.0,
+        "kcs_active_per_approach": 72.0,
+        "mbons_active_per_approach": 3.0,
+        "visual_mbon_rate_hz_last_300ms": 0.16993464052287582,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON09",
+            2.04
+          ],
+          [
+            "MBON05",
+            1.67
+          ],
+          [
+            "MBON27",
+            1.11
+          ],
+          [
+            "MBON32",
+            0.37
+          ]
+        ],
+        "n_active_neurons": 88015
+      },
+      "looming_and_context": {
+        "gf_spikes": 18,
+        "columns_with_gf_spike": 5,
+        "p_gf_spike": 0.5555555555555556,
+        "gf_first_spike_frames_before_crash_median": 71.0,
+        "dan_spikes_per_approach": 0.0,
+        "kcs_active_per_approach": 72.33333333333333,
+        "mbons_active_per_approach": 2.6666666666666665,
+        "visual_mbon_rate_hz_last_300ms": 0.1568627450980392,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON09",
+            2.04
+          ],
+          [
+            "MBON05",
+            1.67
+          ],
+          [
+            "MBON27",
+            0.74
+          ],
+          [
+            "MBON32",
+            0.19
+          ]
+        ],
+        "n_active_neurons": 88685
+      },
+      "gf_spike_time_shift_frames": 63.0,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.0,
+      "n_neurons": 265,
+      "code": "random_half",
+      "ramp_deg": 30.0,
+      "rate_hz": 200.0,
+      "context_only": {
+        "gf_spikes": 16,
+        "columns_with_gf_spike": 7,
+        "p_gf_spike": 0.7777777777777778,
+        "gf_first_spike_frames_before_crash_median": 75.0,
+        "dan_spikes_per_approach": 0.1111111111111111,
+        "kcs_active_per_approach": 168.44444444444446,
+        "mbons_active_per_approach": 9.666666666666666,
+        "visual_mbon_rate_hz_last_300ms": 1.10239651416122,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            19.63
+          ],
+          [
+            "MBON09",
+            6.48
+          ],
+          [
+            "MBON32",
+            5.56
+          ],
+          [
+            "MBON05",
+            2.41
+          ]
+        ],
+        "n_active_neurons": 106091
+      },
+      "looming_and_context": {
+        "gf_spikes": 21,
+        "columns_with_gf_spike": 9,
+        "p_gf_spike": 1.0,
+        "gf_first_spike_frames_before_crash_median": 74.0,
+        "dan_spikes_per_approach": 0.0,
+        "kcs_active_per_approach": 168.66666666666666,
+        "mbons_active_per_approach": 9.333333333333334,
+        "visual_mbon_rate_hz_last_300ms": 1.0849673202614378,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            20.0
+          ],
+          [
+            "MBON09",
+            6.3
+          ],
+          [
+            "MBON32",
+            5.93
+          ],
+          [
+            "MBON05",
+            2.22
+          ]
+        ],
+        "n_active_neurons": 105972
+      },
+      "gf_spike_time_shift_frames": 66.0,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.0,
+      "n_neurons": 265,
+      "code": "class_only",
+      "ramp_deg": 0.0,
+      "rate_hz": 100.0,
+      "context_only": {
+        "gf_spikes": 17,
+        "columns_with_gf_spike": 7,
+        "p_gf_spike": 0.7777777777777778,
+        "gf_first_spike_frames_before_crash_median": 78.0,
+        "dan_spikes_per_approach": 0.8888888888888888,
+        "kcs_active_per_approach": 79.44444444444444,
+        "mbons_active_per_approach": 4.888888888888889,
+        "visual_mbon_rate_hz_last_300ms": 0.12200435729847495,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON05",
+            2.22
+          ],
+          [
+            "MBON27",
+            1.67
+          ],
+          [
+            "MBON20",
+            0.56
+          ],
+          [
+            "MBON09",
+            0.37
+          ]
+        ],
+        "n_active_neurons": 95834
+      },
+      "looming_and_context": {
+        "gf_spikes": 22,
+        "columns_with_gf_spike": 8,
+        "p_gf_spike": 0.8888888888888888,
+        "gf_first_spike_frames_before_crash_median": 75.5,
+        "dan_spikes_per_approach": 0.8888888888888888,
+        "kcs_active_per_approach": 79.77777777777777,
+        "mbons_active_per_approach": 4.777777777777778,
+        "visual_mbon_rate_hz_last_300ms": 0.10457516339869281,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON05",
+            2.22
+          ],
+          [
+            "MBON27",
+            1.48
+          ],
+          [
+            "MBON09",
+            0.19
+          ],
+          [
+            "MBON20",
+            0.19
+          ]
+        ],
+        "n_active_neurons": 97715
+      },
+      "gf_spike_time_shift_frames": 67.5,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.0,
+      "n_neurons": 265,
+      "code": "class_only",
+      "ramp_deg": 0.0,
+      "rate_hz": 200.0,
+      "context_only": {
+        "gf_spikes": 21,
+        "columns_with_gf_spike": 4,
+        "p_gf_spike": 0.4444444444444444,
+        "gf_first_spike_frames_before_crash_median": 78.5,
+        "dan_spikes_per_approach": 577.2222222222222,
+        "kcs_active_per_approach": 518.7777777777778,
+        "mbons_active_per_approach": 20.333333333333332,
+        "visual_mbon_rate_hz_last_300ms": 11.982570806100219,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON05",
+            33.52
+          ],
+          [
+            "MBON09",
+            33.33
+          ],
+          [
+            "MBON11",
+            32.78
+          ],
+          [
+            "MBON14",
+            22.04
+          ]
+        ],
+        "n_active_neurons": 110522
+      },
+      "looming_and_context": {
+        "gf_spikes": 29,
+        "columns_with_gf_spike": 5,
+        "p_gf_spike": 0.5555555555555556,
+        "gf_first_spike_frames_before_crash_median": 77.0,
+        "dan_spikes_per_approach": 36.44444444444444,
+        "kcs_active_per_approach": 148.44444444444446,
+        "mbons_active_per_approach": 18.666666666666668,
+        "visual_mbon_rate_hz_last_300ms": 2.183006535947712,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            22.96
+          ],
+          [
+            "MBON09",
+            10.19
+          ],
+          [
+            "MBON20",
+            9.63
+          ],
+          [
+            "MBON05",
+            7.96
+          ]
+        ],
+        "n_active_neurons": 104781
+      },
+      "gf_spike_time_shift_frames": 69.0,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.0,
+      "n_neurons": 265,
+      "code": "class_only",
+      "ramp_deg": 30.0,
+      "rate_hz": 100.0,
+      "context_only": {
+        "gf_spikes": 24,
+        "columns_with_gf_spike": 6,
+        "p_gf_spike": 0.6666666666666666,
+        "gf_first_spike_frames_before_crash_median": 65.0,
+        "dan_spikes_per_approach": 0.2222222222222222,
+        "kcs_active_per_approach": 48.111111111111114,
+        "mbons_active_per_approach": 3.3333333333333335,
+        "visual_mbon_rate_hz_last_300ms": 0.15250544662309368,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON05",
+            2.41
+          ],
+          [
+            "MBON30",
+            2.04
+          ],
+          [
+            "MBON20",
+            1.11
+          ],
+          [
+            "MBON27",
+            0.37
+          ]
+        ],
+        "n_active_neurons": 88030
+      },
+      "looming_and_context": {
+        "gf_spikes": 26,
+        "columns_with_gf_spike": 7,
+        "p_gf_spike": 0.7777777777777778,
+        "gf_first_spike_frames_before_crash_median": 59.0,
+        "dan_spikes_per_approach": 0.3333333333333333,
+        "kcs_active_per_approach": 47.666666666666664,
+        "mbons_active_per_approach": 1.8888888888888888,
+        "visual_mbon_rate_hz_last_300ms": 0.0915032679738562,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON05",
+            1.67
+          ],
+          [
+            "MBON30",
+            1.11
+          ],
+          [
+            "MBON20",
+            0.56
+          ],
+          [
+            "MBON27",
+            0.37
+          ]
+        ],
+        "n_active_neurons": 87494
+      },
+      "gf_spike_time_shift_frames": 51.0,
+      "reflex_preserved": false
+    },
+    {
+      "min_kc_fraction": 0.0,
+      "n_neurons": 265,
+      "code": "class_only",
+      "ramp_deg": 30.0,
+      "rate_hz": 200.0,
+      "context_only": {
+        "gf_spikes": 20,
+        "columns_with_gf_spike": 7,
+        "p_gf_spike": 0.7777777777777778,
+        "gf_first_spike_frames_before_crash_median": 75.0,
+        "dan_spikes_per_approach": 10.0,
+        "kcs_active_per_approach": 119.44444444444444,
+        "mbons_active_per_approach": 11.222222222222221,
+        "visual_mbon_rate_hz_last_300ms": 1.3333333333333333,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            12.41
+          ],
+          [
+            "MBON09",
+            6.67
+          ],
+          [
+            "MBON05",
+            5.74
+          ],
+          [
+            "MBON20",
+            5.37
+          ]
+        ],
+        "n_active_neurons": 99493
+      },
+      "looming_and_context": {
+        "gf_spikes": 23,
+        "columns_with_gf_spike": 9,
+        "p_gf_spike": 1.0,
+        "gf_first_spike_frames_before_crash_median": 74.0,
+        "dan_spikes_per_approach": 5.0,
+        "kcs_active_per_approach": 119.11111111111111,
+        "mbons_active_per_approach": 10.333333333333334,
+        "visual_mbon_rate_hz_last_300ms": 1.0021786492374727,
+        "top_mbon_types_hz_last_300ms": [
+          [
+            "MBON27",
+            13.33
+          ],
+          [
+            "MBON09",
+            4.54
+          ],
+          [
+            "MBON20",
+            4.07
+          ],
+          [
+            "MBON05",
+            3.15
+          ]
+        ],
+        "n_active_neurons": 103642
+      },
+      "gf_spike_time_shift_frames": 66.0,
+      "reflex_preserved": false
+    }
+  ],
+  "chosen": null,
+  "meta": {
+    "timestamp_utc": "2026-09-20T21:30:21+00:00",
+    "git_commit": "8d6cda8d398cb7151a92643d61a57372159a4f54",
+    "git_dirty": true,
+    "python": "3.12.12",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "torch": "2.14.0+cu130",
+    "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+    "cuda": "13.0"
+  }
+}

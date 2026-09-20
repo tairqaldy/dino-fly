@@ -79,7 +79,7 @@ Full local + cloud setup: [`docs/DEPLOY.md`](docs/DEPLOY.md).
 | 3 API, DB, replay validation, leaderboard | done locally; web deployed; **Railway API deploy blocked** (see DEPLOY.md) |
 | 4 Learning (KC→MBON plasticity) | implemented; results in RESEARCH.md as they are measured |
 | 5 Crowd teaching | implemented + unit-tested; **not yet measured** (needs human runs) |
-| 6 Hardware | firmware + pose pipeline written; **not yet tested on hardware** |
+| 6 Hardware | firmware + pose pipeline written; both firmware projects compile with PlatformIO; **not yet tested on hardware** |
 | 7–8 Stretch, MaleCNS, v1.0 write-up | not started |
 
 ## How to cite / credits

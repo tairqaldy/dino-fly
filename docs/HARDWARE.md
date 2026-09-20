@@ -1,8 +1,12 @@
 # Hardware
 
-> **Status: firmware written, not yet flashed or tested on hardware.** No board was attached when this code was
-> written. The pose detector logic is unit-tested (`brain/tests/test_pose.py`); everything that touches pins is not.
+> **Status: firmware compiles, not yet flashed or tested on hardware.** No board was attached when this code was
+> written. Both projects build with PlatformIO Core 6.2.0 (stats display: 77.7 % of flash, pose camera: 22.7 %); the
+> pose detector logic is unit-tested (`brain/tests/test_pose.py`); everything that touches pins is untested.
 > Treat the first flash as a bring-up session and fix pins here if your board differs.
+>
+> No PlatformIO install is needed if you have `uv`: `uvx --from platformio pio run -d firmware/stats-display`
+> (add `-t upload` to flash).
 
 Two small nodes sit on the desk next to the laptop that runs the brain.
 
@@ -63,5 +67,10 @@ uv run --no-sync --with mediapipe --with opencv-python python brain/pose/pose_in
 rise > 12 % of your nose-to-hip length, `duck` when the nose drops > 30 %) on `ws://localhost:8766`.
 A laptop webcam works the same way (`--source 0`).
 
-Not built yet: wiring the pose events into the Play page (the page listens to keyboard and touch today), the
-calibration UI on `/lab`, on-device TFLite pose, and the INMP441 clap-to-startle easter egg.
+On the Play page tick **"play with your body (camera)"**: the page connects to `ws://localhost:8766` (override with
+`VITE_POSE_WS`), a jump starts the run and jumps, a crouch ducks, standing up releases. The message parsing is
+unit-tested (`apps/web/test/pose.test.ts`); the full camera → page chain has **not been tried with a real camera yet**.
+A page served over https (GitHub Pages) may refuse the plain `ws://localhost` connection in some browsers — use the
+local dev server for body control.
+
+Not built yet: the calibration UI on `/lab`, on-device TFLite pose, and the INMP441 clap-to-startle easter egg.

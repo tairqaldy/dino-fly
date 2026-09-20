@@ -210,16 +210,109 @@ There are **0 direct MBON → GF synapses** in the connectome, so any influence 
 Source: `results/mbon_influence.json`.
 <!-- END:mbon_influence -->
 
-## Phase 4 — Does the fly learn?
+## Phase 4 — Can visual context reach the mushroom body without disturbing the reflex?
 
-**Hypothesis H1.** Dopamine-gated depression of KC→MBON synapses (reward = cleared obstacle → PAM, punishment = crash →
-PPL1), with a coarse visual context delivered to Kenyon cells, improves the held-out score over generations.
-**What would falsify it:** no improvement beyond the shuffled-dopamine and random-plasticity ablations on the same
-held-out seeds. A null result is reported as such.
+**Question.** The mushroom body can only associate outcomes with situations it is told about. The brief's design is
+to encode a coarse visual context (obstacle class × proximity) in the visual projection neurons that synapse onto
+Kenyon cells. Two things must hold for a learning experiment to mean anything: the context must make MBONs fire
+(the published model has no spontaneous activity, so a silent MBON stays silent however its synapses change), and
+it must leave the innate reflex alone — those visual neurons are real neurons with many other targets.
+The selection rule was written into `experiments/mb_drive.py` before its results existed; no game score is involved.
+
+<!-- BEGIN:mb_drive -->
+not yet measured
+<!-- END:mb_drive -->
+
+**Reading.** Driving all 265 KC-projecting visual neurons fires the Giant Fiber by itself — the dino would jump at
+the mere sight of an obstacle, up to ~70 frames too early. Restricting the drive to the 47 (or 30) neurons that are dedicated
+mushroom-body inputs avoids that but *abolishes* the looming-evoked GF spike, at rates where MBONs are still nearly
+silent — so the suppression does not run through the mushroom body and learning could not undo it. In this model the
+escape reflex sits at threshold (the frozen transducer gain is only 3 Hz), and no visual-projection-level context
+drive that we tried leaves it intact. Strong drives also make dopaminergic neurons fire from network activity alone
+(table: up to several hundred spikes per approach; a full punishment burst of the transducer is 16 PPL1 neurons ×
+100 Hz × 100 ms ≈ 160 spikes), which would gate plasticity regardless of what happens in the game.
+
+**Deviation (DECISIONS.md D13), flagged for review.** To test the learning hypotheses at all, the context is delivered
+one synapse further in: directly to the 388 Kenyon cells that receive input from the dedicated visual neurons. This
+bends the project's rule 3 (sensory input only through identified sensory pathways); it adds no learned component.
+The same diagnostic and the same rule:
+
+<!-- BEGIN:mb_drive_kc -->
+not yet measured
+<!-- END:mb_drive_kc -->
+
+**Reading.** A Kenyon-cell-level context leaves the reflex untouched and makes MBONs fire — mostly MBON27, MBON09 and
+MBON32, which the influence map above found to have *no* effect on the Giant Fiber. So the prediction for H1, stated
+before the learning experiment ran: the visually driven part of the mushroom body does not talk to the escape
+circuit in this model, and changing its synapses should change nothing.
+
+## Phase 4 — Can the model take a dopamine burst?
+
+Early pilots of the learning experiment (DEV seeds) showed implausibly fast, non-specific depression of most
+KC→MBON synapses, whatever the learning rate. The cause was not the rule but the network: a few frames after some
+crashes a large fraction of all Kenyon cells start firing together although nothing drives them, and the state sustains
+itself (the published model treats dopamine like a fast excitatory transmitter and has no adaptation, and PAM / PPL1
+neurons are wired recurrently with Kenyon cells and MBONs). Measured:
+
+<!-- BEGIN:kc_volley -->
+not yet measured
+<!-- END:kc_volley -->
+
+Our play loop used to leave a finished game's brain column running until the whole batch was done — with a volley
+going and endogenous dopamine gating plasticity on everything. Two consequences: (1) the loop now silences a column
+as soon as its game is over and idle columns never reach the learning rule (regression test
+`test_columns_without_a_game_are_silent_and_never_teach`); what remains is confined to the ≤ 15-frame punishment tail
+after a crash and is counted in every learning result (`kc_volley_column_frames`). (2) We checked whether the
+reward / punishment bursts themselves ignite the mushroom body:
+
+<!-- BEGIN:da_burst -->
+not yet measured
+<!-- END:da_burst -->
+
+**Reading.** Neither a PAM nor a PPL1 burst alone ignites the mushroom body, with or without the visual context, so
+the transducer keeps the strongest burst of the grid. The volleys after crashes need the state a real game leaves
+behind (they follow the game seed, not the batch column — the engine is column-invariant); we did not dissect the
+mechanism further. They are a property of the published model that anyone building plasticity on top of it should
+know about.
+
+## Phase 4 — Does the fly learn? H1: only through the real wiring
+
+**Hypothesis H1.** Dopamine-gated depression of KC→MBON synapses (reward = cleared obstacle → PAM burst scaled by jump
+timing, punishment = crash → PPL1 burst) improves the held-out score over generations, acting only through the real
+wiring MBON → … → Giant Fiber. **What would falsify it:** no improvement over generation 0, or no advantage over the
+shuffled-dopamine ablation, on the same held-out seeds (criteria and analysis fixed in the docstring of
+`experiments/learning.py`, git tag `prereg-phase4-h1`, ledger entry). A null result is reported as such.
+
+The learning rate is not tuned on any score: a pilot (DEV seeds for evaluation, training seeds that are never reused)
+sets η so that the 1 % fastest-learning synapses lose half their weight in the first generation.
+"No dopamine" means the dopaminergic neurons cannot spike: the rule listens to PAM / PPL1 spikes whoever caused them,
+and the network itself makes them fire a little (endogenous dopamine).
 
 <!-- BEGIN:learning -->
 not yet measured
 <!-- END:learning -->
+
+## Phase 4 — Second hypothesis, H2: mushroom-body output sets the looming gain
+
+The brief foresees this step: *"If the influence is too weak to change jump timing, the honest result is 'plasticity
+at KC→MBON does not reach the escape circuit strongly enough in this model' — report it, then test the second
+hypothesis: plasticity modulates the sensory gain (documented as a model assumption, still no learned layer)."*
+
+**Model assumption (not connectome).** Learned changes of mushroom-body output shift the gain of the looming pathway:
+with A₊ / A₋ the low-passed (τ = 300 ms) summed firing of avoidance-type / approach-type MBONs and Ā the same
+quantities in a naive brain in the same contexts,
+
+    looming gain = G · 2^clip(A₊/Ā₊ − A₋/Ā₋, −1, +1)
+
+so a naive brain plays at exactly G, abolishing the approach-type response doubles the gain and abolishing the
+avoidance-type response halves it. Valence follows Aso et al. 2014 (eLife 3:e04580): glutamatergic MBONs promote
+avoidance, GABAergic and cholinergic MBONs approach; transmitters are FlyWire's predictions. The mapping is fixed and
+hand-written; the only learned quantities remain the KC→MBON gains, changed only by the dopamine-gated rule. Same
+protocol, criteria and ablations as H1 (git tag `prereg-phase4-h2`).
+
+<!-- BEGIN:learning_h2 -->
+not yet measured
+<!-- END:learning_h2 -->
 
 ## Phase 5 — Does teaching by humans help?
 

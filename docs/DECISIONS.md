@@ -90,14 +90,21 @@ canonical eager engine.
 
 Commits are pushed to `origin/main` at the end of each phase (approved with the Phase 0/1 plan).
 
-## D13 — Visual context for the mushroom body is a crude hand-written code · open
+## D13 — Visual context for the mushroom body: delivered at the Kenyon cells (deviation from rule 3) · open
 
 KC→MBON plasticity needs Kenyon-cell activity that depends on the situation. LC4 / LPLC2 have no synapse onto any
-Kenyon cell; 265 other visual projection neurons (aMe12, MTe32, MTe30, LTe25, …) do. **Default:** those 265 neurons,
-sorted by root ID, are split into 9 groups = obstacle class (3) × proximity (3); exactly one group is driven per
-frame at a rate fixed by a sparseness criterion (≥ 10 % of the recipient KCs respond), never by score
-(`flybrain/transducer/context.py`). This is the weakest link of Phase 4 biologically — a pixel-based front end
-(Phase 7) should replace it. **Ask:** acceptable as a first falsifiable stand-in?
+Kenyon cell; 265 other visual projection neurons (aMe12, MTe32, MTe30, LTe25, …) do, and the brief asks for the
+context to enter there. We tried (`experiments/mb_drive.py`, no game involved, selection rule written first):
+9 disjoint groups, overlapping random-half codes, one code per obstacle class with a rate that ramps with angular
+size; all 265 neurons or only the 47 / 30 that send ≥ 5 % / ≥ 10 % of their output to Kenyon cells. **Every**
+configuration either fires the Giant Fiber by itself or abolishes its looming response (the reflex sits at
+threshold: G\* = 3 Hz), usually while MBONs are still almost silent.
+**Default (deviation):** the context drives the 388 visual Kenyon cells directly (`ContextParams.level = "kc"`, one
+code per obstacle class, rate fixed by the same rule). This bends rule 3 ("sensory input only through identified
+sensory pathways") by one synapse; it adds nothing learned, and every result stamps `context_level` into its
+protocol. The visual-projection level stays implemented and is preferred automatically if a configuration ever
+passes the diagnostic. **Ask:** accept this deviation, or treat "no usable visual route into the mushroom body in
+this model" as the final Phase 4 answer? (A pixel-based front end, Phase 7, is the real fix.)
 
 ## D14 — Plasticity rule details that are ours · open
 
@@ -123,6 +130,32 @@ prototyped with torch's jiterator but not adopted: it was not faster than eager 
 fused multiply-add breaks bitwise equality. The plastic (KC→MBON) path accumulates floats, so learning runs are
 deterministic on CPU but only statistically reproducible on GPU.
 
+## D17 — Second hypothesis (H2): mushroom-body output sets the looming gain · open
+
+Foreseen by the brief ("plasticity modulates the sensory gain — documented as a model assumption, still no learned
+layer"). **Default:** looming gain = G · 2^clip(A₊/Ā₊ − A₋/Ā₋, −1, 1), with A the low-passed (τ = 300 ms) summed
+firing of avoidance-type (glutamatergic) / approach-type (GABAergic, cholinergic) MBONs and Ā the naive brain's values
+for the same class × proximity bin (`flybrain.learn.SensoryGainParams`). Choices that are ours: valence by predicted
+transmitter (Aso et al. 2014), the ±1-octave range, τ, normalising by the naive response so that a naive brain plays
+at exactly G (otherwise "learning" could merely undo a handicap we introduced). All were fixed before any H2 game.
+**Ask:** is this the H2 you had in mind?
+
+## D18 — "No dopamine" means silenced dopaminergic neurons · decided
+
+The plasticity rule listens to PAM / PPL1 spikes, whoever caused them. The network itself makes them fire a little
+(endogenous dopamine), so "the transducer delivers no bursts" is not "no dopamine". The no-DA ablation therefore
+silences PAM / PPL1 (cannot spike); the script asserts that the gains stay exactly 1. Endogenous dopamine is left in
+place in all other conditions — it is the connectome's own.
+
+## D19 — Learning-rate calibration and training budget · decided
+
+η is not given by the brief and no published number maps onto this model. It is set by a pilot through a synaptic
+criterion (the 1 % fastest-learning synapses lose half their weight in the first generation) on DEV / never-reused
+training seeds; scores are printed by the pilot but not used. Budget: 5 generations × 64 games, evaluation on the
+100 forever-held-out seeds before training and after generations 1, 3 and 5 (normal) or after the last one (shuffled
+dopamine), chosen to fit both hypotheses into one night of GPU time (≈ 2 brain-seconds per wall second; training
+games cost about twice as much wall time as evaluation games in the pilot).
+
 ---
 
 # Forking-paths log
@@ -136,3 +169,8 @@ deterministic on CPU but only statistically reproducible on GPU.
 | F5 | Outcome of F4: **G\* = 3 Hz** (median size 40.3°, P(spike) 0.70). Frozen as `TRANSDUCER_VERSION = 1` | `results/looming_gf.json` | — (result) |
 | F6 | Pipeline check of the closed loop on 32 DEV seeds with the frozen transducer (intact, GF-ablated, M1) — *DEV seeds only*; no parameter was changed afterwards | `results/naive_play_dev.json` | after F5, before any held-out game |
 | F7 | Naive-play analysis plan: conditions, 200 held-out seeds paired by seed, common random numbers, primary endpoint = obstacles cleared (and score), games capped at 10,000 frames, 20 global + 5 strict shuffles compared as distributions of per-realisation means, paired bootstrap CIs, Wilcoxon signed-rank with Holm correction, rank-biserial effect size; fixed priority order under a compute budget | `experiments/naive_play.py` docstring + git tag `prereg-phase1` | before |
+| F8 | First context transducer (9 disjoint groups of the 265 KC-projecting visual neurons; rate by "≥ 10 % of recipient KCs respond" → 100 Hz) | `context.py` v1, D13 (first version) | before any data; **abandoned** after F9 |
+| F9 | Manipulation checks of the context drive, no game involved: static presentation showed silent MBONs for F8; an overlapping code at 200 Hz made MBONs fire. A DEV-seed pilot with that drive (32 games) showed the naive fly jumping a median of 78 frames early (score at the never-jump floor) and mostly endogenous dopamine → the diagnostic was rebuilt around real approach sequences with a written selection rule (no context-evoked GF spike; P(GF spike) ≥ reference − 0.2; spike time within ± 3 frames; then maximal MBON rate) | `experiments/mb_drive.py` docstring | rule written **after** seeing the static diagnostic and one DEV pilot, **before** the approach-based results; no held-out game had been played with any learner |
+| F10 | Outcome of F9: no visual-projection-level configuration passes (24 tried); Kenyon-cell-level context passes → 388 KCs, one code per obstacle class, 40 Hz, no ramp (D13 deviation) | `results/mb_drive.json`, `results/mb_drive_kc.json` | — (result) |
+| F11 | Learning protocol: H1 / H2 definitions, conditions, 5 × 64 training games, evaluation schedule, primary endpoint (last generation vs. generation 0, paired) **and** the requirement to beat shuffled dopamine, verdict wording, η by the synaptic pilot criterion, "no dopamine" = silenced DANs | `experiments/learning.py` docstring + git tags `prereg-phase4-h1`, `prereg-phase4-h2` | before any held-out learning game. Seen beforehand: DEV pilots (scores printed, not used for any choice) |
+| F12 | H2 mapping (valence by transmitter, ± 1 octave, τ = 300 ms, normalisation by the naive response) | `flybrain/learn.py`, D17 | before any H2 game |

@@ -2,7 +2,9 @@ import { createInitialState, type Input } from "@dino-fly/dino-core";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GameCanvas } from "../components/GameCanvas.js";
 import { api, bundledGhosts, type Ghost, type SubmitResult } from "../lib/api.js";
+import { CONFIG } from "../lib/config.js";
 import type { FeedSnapshot } from "../lib/feed.js";
+import { applyPoseAction, connectPose } from "../lib/pose.js";
 import { FixedStep, RaceSession } from "../lib/race.js";
 
 type Phase = "idle" | "running" | "over";
@@ -15,6 +17,10 @@ export function Play({ feed }: { feed: FeedSnapshot }) {
   const session = useRef<RaceSession | null>(null);
   const token = useRef<string | null>(null);
   const keys = useRef<Input>({ jump: false, duck: false });
+  const [bodyControl, setBodyControl] = useState(false);
+  const [poseConnected, setPoseConnected] = useState(false);
+  const phaseRef = useRef<Phase>("idle");
+  phaseRef.current = phase;
 
   const start = useCallback(async () => {
     const started = await api.startRun();
@@ -92,6 +98,23 @@ export function Play({ feed }: { feed: FeedSnapshot }) {
     };
   }, [phase, start]);
 
+  // body control: jump / crouch in front of a camera (brain/pose/pose_input.py → local WebSocket)
+  useEffect(() => {
+    if (!bodyControl) return;
+    const dispose = connectPose(
+      CONFIG.poseWs,
+      (action) => {
+        keys.current = applyPoseAction(action);
+        if (action === "jump" && phaseRef.current !== "running") void start();
+      },
+      setPoseConnected,
+    );
+    return () => {
+      dispose();
+      setPoseConnected(false);
+    };
+  }, [bodyControl, start]);
+
   const touch = (down: boolean) => (e: React.TouchEvent | React.MouseEvent) => {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const x = "touches" in e ? (e.touches[0]?.clientX ?? e.changedTouches[0]?.clientX ?? 0) : e.clientX;
@@ -143,6 +166,19 @@ export function Play({ feed }: { feed: FeedSnapshot }) {
           <input value={name} maxLength={24} onChange={(e) => setName(e.target.value)} placeholder="anonymous" />
         </label>
         <span className="hint">jump: SPACE / ↑ / tap · duck: ↓ / tap left edge</span>
+      </div>
+      <div className="row">
+        <label>
+          <input type="checkbox" checked={bodyControl} onChange={(e) => setBodyControl(e.target.checked)} /> play with your body (camera)
+        </label>
+        {bodyControl ? (
+          <span className="hint">
+            <span className={poseConnected ? "dot on" : "dot"} />{" "}
+            {poseConnected
+              ? "pose tracker connected — jump to jump, crouch to duck"
+              : `no pose tracker at ${CONFIG.poseWs} — start brain/pose/pose_input.py on this machine (docs/HARDWARE.md)`}
+          </span>
+        ) : null}
       </div>
 
       <h2>

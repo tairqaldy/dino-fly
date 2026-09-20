@@ -108,14 +108,42 @@ def test_dopamine_and_context_transducers():
     groups = group_of(265)
     assert groups.min() == 0 and groups.max() == 8 and np.all(np.diff(groups) >= 0)
     assert abs(np.bincount(groups).max() - np.bincount(groups).min()) <= 1
-    from flybrain.transducer.context import ContextParams
+    from flybrain.transducer.context import ContextParams, membership
 
-    r = context_rates(265, 4, ContextParams())
+    r = context_rates(265, 1, 20.0, ContextParams(rate_hz=60.0, code="one_of_9", ramp_deg=0.0))  # class 1, mid → context 4
     assert set(np.unique(r)) == {0.0, 60.0} and np.all((r > 0) == (groups == 4))
-    assert context_rates(265, None, ContextParams()).sum() == 0
+    assert context_rates(265, None, 0.0, ContextParams()).sum() == 0
+    # overlapping codes: every context drives a fixed, different, roughly half-sized subset
+    m = membership(265, "random_half")
+    assert m.shape == (265, 9) and np.array_equal(m, membership(265, "random_half"))
+    assert np.all(np.abs(m.mean(axis=0) - 0.5) < 0.12) and len({c.tobytes() for c in m.T}) == 9
+    r = context_rates(265, 1, 20.0, ContextParams(code="random_half", rate_hz=80.0, ramp_deg=0.0))
+    assert np.all((r > 0) == m[:, 4]) and set(np.unique(r)) == {0.0, 80.0}
+    # class_only: one code per obstacle class; the rate ramps with angular size up to ramp_deg
+    mc = membership(265, "class_only")
+    assert all(np.array_equal(mc[:, c * 3], mc[:, c * 3 + k]) for c in range(3) for k in range(3)) and len({c.tobytes() for c in mc.T}) == 3
+    pr = ContextParams(code="class_only", rate_hz=100.0, ramp_deg=30.0)
+    assert context_rates(265, 2, 15.0, pr).max() == 50.0 and context_rates(265, 2, 45.0, pr).max() == 100.0
+    assert np.array_equal(context_rates(265, 2, 5.0, pr) > 0, context_rates(265, 2, 45.0, pr) > 0)
 
 
-def make_learning_setup(synth: Connectome, b: int, da_mode: str):
+def test_context_neurons_at_both_levels(synth: Connectome):
+    from flybrain.transducer.context import ContextParams, context_neurons, visual_kenyon_cells
+
+    i = idx(synth)
+    every = kc_projecting_vpns(synth, i["vpn"], i["kc"])
+    dedicated = kc_projecting_vpns(synth, i["vpn"], i["kc"], min_kc_fraction=0.05)
+    assert set(dedicated) <= set(every) <= set(i["vpn"]) and len(every) > 5
+    assert np.all(np.diff(synth.root_ids[every]) > 0)  # sorted by root ID → the code is reproducible
+    kcs = visual_kenyon_cells(synth, i["vpn"], i["kc"], 0.0)
+    assert 0 < len(kcs) <= len(i["kc"]) and set(kcs) <= set(i["kc"]) and np.all(np.diff(synth.root_ids[kcs]) > 0)
+    assert np.array_equal(context_neurons(synth, i["vpn"], i["kc"], ContextParams(level="kc", min_kc_fraction=0.0)), kcs)
+    assert np.array_equal(context_neurons(synth, i["vpn"], i["kc"], ContextParams(level="vpn", min_kc_fraction=0.0)), every)
+    with pytest.raises(ValueError):
+        context_neurons(synth, i["vpn"], i["kc"], ContextParams(level="retina"))
+
+
+def make_learning_setup(synth: Connectome, b: int, da_mode: str, context=None):
     i = idx(synth)
     lc4, lplc2, gf = (neurons.indices(synth, n) for n in ("LC4", "LPLC2", "GF"))
     vpn_all = np.flatnonzero((synth.annotations["super_class"] == "visual_projection").to_numpy())
@@ -124,7 +152,7 @@ def make_learning_setup(synth: Connectome, b: int, da_mode: str):
     assert set(ctx) <= set(i["vpn"]) and len(ctx) > 5
     net = LIFNetwork(synth, P, batch_size=b, chunk_steps=10)
     learner = Learner(synth, net, kc=i["kc"], mbon=i["mbon"], pam=i["pam"], ppl1=i["ppl1"], context_vpns=ctx,
-                      plasticity=PlasticityParams(eta=0.02), da_mode=da_mode)
+                      plasticity=PlasticityParams(eta=0.02), da_mode=da_mode, context=context)
     drive = PoissonDrive(np.concatenate([lc4, lplc2, learner.extra_neurons]), b, P.dt_ms)
     net.set_drive(drive)
     return net, drive, learner, len(lc4), len(lplc2), gf
@@ -133,6 +161,10 @@ def make_learning_setup(synth: Connectome, b: int, da_mode: str):
 @pytest.mark.parametrize("da_mode,expect_change", [("normal", True), ("none", False), ("shuffled", True)])
 def test_learning_loop_changes_gains_only_through_dopamine(synth: Connectome, da_mode: str, expect_change: bool):
     net, drive, learner, n_lc4, n_lplc2, gf = make_learning_setup(synth, 3, da_mode)
+    if da_mode == "none":
+        # "no dopamine" = the dopaminergic neurons cannot spike: the network itself may drive them (endogenous dopamine),
+        # and the rule listens to their spikes whoever caused them
+        net.ablate(np.concatenate([learner.pam, learner.ppl1]))
     results = play_games(net, drive, n_lc4, n_lplc2, gf, [1, 2, 3, 4], looming=LoomingParams(version=0, gain_hz=150.0),
                          max_frames=350, learner=learner)
     assert len(results) == 4
@@ -142,3 +174,90 @@ def test_learning_loop_changes_gains_only_through_dopamine(synth: Connectome, da
     if da_mode == "normal":
         assert learner.punishments == sum(r.crashed for r in results) and learner.punishments > 0
         assert learner.describe()["n_plastic_synapses"] == learner.rule.n_plastic
+    assert learner.spike_totals["frames"] > 0 and learner.sensory_gain() is None  # H1: nothing touches the senses
+
+
+def test_columns_without_a_game_are_silent_and_never_teach(synth: Connectome):
+    """Found on the real connectome: a finished column kept a self-sustained Kenyon-cell volley going and, through
+    endogenous dopamine, rewrote most synapses while it sat idle. Idle columns are reset and masked out."""
+    net, drive, learner, n_lc4, n_lplc2, gf = make_learning_setup(synth, 3, "normal")
+    seen = {"idle_spikes": 0, "idle_frames": 0, "busy_spikes": 0}
+    original_rates, original_frame = learner.extra_rates, learner.frame
+
+    def extra_rates(games, views, tails):
+        seen["idle"] = [g is None for g in games]
+        return original_rates(games, views, tails)
+
+    def frame(watch_counts):
+        counts = np.asarray(watch_counts)
+        seen["idle_spikes"] += int(counts[:, seen["idle"]].sum())
+        seen["idle_frames"] += int(sum(seen["idle"]))
+        seen["busy_spikes"] += int(counts.sum())
+        original_frame(watch_counts)
+
+    learner.extra_rates, learner.frame = extra_rates, frame
+    play_games(net, drive, n_lc4, n_lplc2, gf, [1, 2, 3, 4], looming=LoomingParams(version=0, gain_hz=150.0), max_frames=350, learner=learner)
+    assert seen["idle_frames"] > 0 and seen["busy_spikes"] > 0  # 4 games in 3 columns: columns do go idle …
+    assert seen["idle_spikes"] == 0  # … and then contribute nothing
+    u, g = net.state_mv(np.arange(synth.n))  # after the last game every column is idle → the whole brain is at rest
+    assert float(np.abs(u).max()) == 0.0 and float(np.abs(g).max()) == 0.0
+
+
+def make_h2_learner(synth: Connectome, b: int = 2):
+    from flybrain.learn import SensoryGainParams
+
+    i = idx(synth)
+    net = LIFNetwork(synth, P, batch_size=b, chunk_steps=10)
+    n_mbon = len(i["mbon"])
+    valence = np.where(np.arange(n_mbon) < n_mbon // 2, 1, -1)  # first half avoidance-type, second half approach-type
+    naive = np.tile([[40.0, 60.0]], (9, 1))  # summed Hz per population, identical in all 9 contexts
+    learner = Learner(synth, net, kc=i["kc"], mbon=i["mbon"], pam=i["pam"], ppl1=i["ppl1"], context_vpns=i["vpn"],
+                      sensory_gain=SensoryGainParams(tau_ms=50.0), mbon_valence=valence, naive_mbon_hz=naive)
+    return net, learner, valence, naive
+
+
+def run_h2_frames(learner, valence, hz_avoid: float, hz_approach: float, ctx: int, frames: int = 400, seed: int = 0) -> float:
+    """Feed Poisson MBON spike counts with the given summed population rates; return the mean log2 gain of column 0."""
+    rng = np.random.default_rng(seed)
+    n_kc, n_mbon, n_dan = len(learner.rule.kc), len(learner.rule.mbon), len(learner.rule.dan)
+    octaves = []
+    for _ in range(frames):
+        counts = np.zeros((n_kc + n_mbon + n_dan, learner.b))
+        for sign, hz in ((1, hz_avoid), (-1, hz_approach)):
+            rows = n_kc + np.flatnonzero(valence == sign)
+            counts[rows] = rng.poisson(hz * 0.010 / len(rows), size=(len(rows), learner.b))
+        learner._ctx_now[:] = ctx
+        learner.frame(counts)
+        octaves.append(np.log2(learner.sensory_gain()[0]))
+    return float(np.mean(octaves[100:]))
+
+
+def test_h2_sensory_gain_is_neutral_for_a_naive_brain_and_bounded(synth: Connectome):
+    _net, learner, valence, _ = make_h2_learner(synth)
+    assert abs(run_h2_frames(learner, valence, 40.0, 60.0, ctx=4)) < 0.1  # naive MBON output → gain G on average
+    learner.start_game(0)
+    # (the clip at ±1 octave makes the noisy mean fall a little short of ±1)
+    assert run_h2_frames(learner, valence, 40.0, 0.0, ctx=4) > 0.7  # approach-type response abolished → gain ≈ doubles
+    learner.start_game(0)
+    assert run_h2_frames(learner, valence, 0.0, 60.0, ctx=4) < -0.7  # avoidance-type response abolished → gain ≈ halves
+    learner.start_game(0)
+    assert run_h2_frames(learner, valence, 0.0, 0.0, ctx=-1) == 0.0  # nothing in view → no baseline → no modulation
+    g = learner.sensory_gain()
+    assert g.shape == (learner.b,) and np.all((g >= 0.5) & (g <= 2.0))
+    with pytest.raises(ValueError):
+        i = idx(synth)
+        from flybrain.learn import SensoryGainParams
+
+        Learner(synth, _net, kc=i["kc"], mbon=i["mbon"], pam=i["pam"], ppl1=i["ppl1"], context_vpns=i["vpn"], sensory_gain=SensoryGainParams())
+
+
+def test_h2_gain_scales_the_looming_drive_in_the_play_loop(synth: Connectome):
+    from flybrain.transducer.context import ContextParams
+
+    # context off: in the small synthetic net the context volley alone can fire the GF
+    net, drive, learner, n_lc4, n_lplc2, gf = make_learning_setup(synth, 2, "none", ContextParams(rate_hz=0.0))
+    learner.sensory_gain = lambda: np.zeros(2)  # looming pathway switched off through the H2 hook …
+    blind = play_games(net, drive, n_lc4, n_lplc2, gf, [1, 2], looming=LoomingParams(version=0, gain_hz=150.0), max_frames=350, learner=learner)
+    learner.sensory_gain = lambda: None
+    seeing = play_games(net, drive, n_lc4, n_lplc2, gf, [1, 2], looming=LoomingParams(version=0, gain_hz=150.0), max_frames=350, learner=learner)
+    assert sum(r.jumps for r in blind) < sum(r.jumps for r in seeing)  # … removes the looming-evoked jumps

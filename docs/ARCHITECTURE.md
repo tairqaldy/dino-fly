@@ -15,9 +15,9 @@ flowchart LR
     game --> sens --> brain --> motor --> game
   end
   ts["packages/dino-core (TS)\nsource of truth + golden fixtures"] -. byte-identical state hashes .-> game
-  api["apps/api (planned)\nRailway: REST + WS hub, Postgres, R2"]
-  web["apps/web (planned)\nCloudflare Pages"]
-  fw["firmware (planned)\nESP32 display, pose camera"]
+  api["apps/api\nREST + WS hub, replay validation, Postgres, R2 or disk"]
+  web["apps/web\nstatic site (GitHub Pages today)"]
+  fw["firmware (untested on hardware)\nESP32 display, pose camera"]
   laptop -. outbound WebSocket .-> api
   web <--> api
   fw <--> laptop
@@ -56,7 +56,18 @@ as a CUDA graph.
 `packages/dino-core` (TypeScript) is the source of truth: pure `step(state, input)`, all-integer fixed-point
 state (1 px = 1000), mulberry32 state inside the game state, constants in one `constants.json` shared with the
 Python port. Golden fixtures store recorded actions and a per-frame hash of the canonical state; the Python port
-must match every hash. The API *(planned)* replays submitted human runs with the same engine to validate scores.
+must match every hash. The API replays submitted human runs — and the fly's runs reported by the worker — with the same engine and stores
+only the replayed score.
+
+## Learning (Phase 4)
+
+Only the 62,261 KC→MBON connections are plastic. In the engine they travel through a small float ring buffer that
+covers just the MBONs (weight = frozen synapse count × gain; identical to the frozen network at gain 1). Once per game
+frame `flybrain/plasticity.py` updates per-synapse eligibility traces from Kenyon-cell and MBON spike counts and, when
+dopaminergic neurons fire, depresses eligible synapses in proportion to the dopamine each MBON receives
+(DAN→MBON synapse counts as compartment proxy). Reward (obstacle cleared) drives the PAM cluster, punishment (crash)
+the PPL1 cluster; a coarse visual context reaches the Kenyon cells through the 265 visual projection neurons that
+synapse onto them. A generation is a gain vector; evaluation always uses the same 100 held-out seeds with plasticity off.
 
 ## Data
 

@@ -7,4 +7,6 @@ export const CONFIG = {
   /** REST API (leaderboard, run submission, ghosts). Empty string = offline mode (bundled ghosts only). */
   apiUrl: (env.VITE_API_URL as string | undefined) ?? "http://localhost:8787",
   labMode: (env.VITE_LAB_MODE as string | undefined) === "1" || env.DEV,
+  /** Body control: `brain/pose/pose_input.py` on the same machine as the browser. */
+  poseWs: (env.VITE_POSE_WS as string | undefined) ?? "ws://localhost:8766",
 };
