@@ -136,7 +136,48 @@ Source: `results/looming_gf.json`.
 ## Phase 1 — How does the naive fly play?
 
 <!-- BEGIN:naive_play -->
-not yet measured
+Protocol: 200 held-out seeds (HELDOUT_200), engine v1, transducer v1 (G = 3 Hz), 10 ms biological time per frame, dt 0.1 ms, games capped at 10,000 frames, pre-registration tag `prereg-phase1`. All comparisons are paired by seed.
+
+| condition | score mean [95% CI] | score median | max | obstacles cleared (mean) | jumps / game | capped |
+|---|---:|---:|---:|---:|---:|---:|
+| `intact` | 83.3 [77.6, 89.3] | 71 | 312 | 4.51 | 4.6 | 0 |
+| `gf_ablated` | 40.0 [40.0, 40.0] | 40 | 40 | 0.00 | 0.0 | 0 |
+| `gf_output_zeroed` | 83.3 [77.6, 89.3] | 71 | 312 | 4.51 | 4.6 | 0 |
+| `random_matched` | 42.0 [41.4, 42.6] | 40 | 58 | 0.21 | 2.5 | 0 |
+| `yoked` | 52.6 [51.3, 54.0] | 50 | 110 | 1.35 | 1.6 | 0 |
+| `never_jump` | 40.0 [40.0, 40.0] | 40 | 40 | 0.00 | 0.0 | 0 |
+| `m0_threshold` | 281.5 [255.9, 307.8] | 245 | 849 | 21.52 | 21.7 | 0 |
+| `m1_monosynaptic` | 40.0 [40.0, 40.0] | 40 | 40 | 0.00 | 0.0 | 0 |
+| `m3_no_direct` | 83.2 [77.5, 89.2] | 70 | 312 | 4.50 | 4.6 | 0 |
+| `intact_noise1` | 83.7 [78.3, 89.2] | 72 | 220 | 4.64 | 4.7 | 0 |
+| `intact_noise2` | 84.2 [77.8, 91.1] | 69 | 270 | 4.63 | 4.7 | 0 |
+| `intact_bio16.7` | 153.4 [139.7, 167.8] | 120 | 549 | 11.14 | 11.3 | 0 |
+| `oracle` | 2637.0 [2637.0, 2637.0] | 2637 | 2637 | 175.09 | 144.9 | 200 |
+| `shuffle_global` × 20 (degree-preserving shuffle of the whole connectome) | score mean per realisation 40.0 (range 40.0–40.0) | | | 0.00 (range 0.00–0.00) | 0.0 | |
+| `shuffle_preserve` × 5 (shuffle preserving LC4/LPLC2-out and GF-in edges) | score mean per realisation 40.0 (range 40.0–40.0) | | | 0.00 (range 0.00–0.00) | 0.0 | |
+
+**The intact fly in numbers:** GF fires 1.0 spikes per biological second (0.9 per obstacle approach; P(≥1 GF spike per approach) = 0.83); P(jump per approach) = 0.82; P(cleared | jumped) = 0.99; median reaction latency 510 ms (biological) from obstacle entering view to first GF spike, at θ = 42.0° / 47 px; median jump 6.3 frames before collision; jumps with nothing in view: 0.0%. Deaths by obstacle: CACTUS_SMALL 114, CACTUS_LARGE 86, PTERODACTYL 0.
+
+**Paired comparisons against the intact fly (obstacles cleared; Wilcoxon signed-rank, Holm-corrected):**
+
+| condition | mean difference intact − condition [95% CI] | p (Holm) | rank-biserial r |
+|---|---:|---:|---:|
+| `gf_ablated` | +4.51 [+3.94, +5.09] | 2.1e-29 | +1.00 |
+| `m1_monosynaptic` | +4.51 [+3.94, +5.09] | 2.1e-29 | +1.00 |
+| `m3_no_direct` | +0.01 [-0.06, +0.10] | 1 | +0.00 |
+| `gf_output_zeroed` | +0.00 [+0.00, +0.00] | 1 | +0.00 |
+| `intact_noise1` | -0.13 [-0.93, +0.69] | 1 | -0.02 |
+| `intact_noise2` | -0.12 [-0.98, +0.74] | 1 | -0.02 |
+| `intact_bio16.7` | -6.63 [-8.08, -5.25] | 3.5e-14 | -0.66 |
+| `never_jump` | +4.51 [+3.94, +5.09] | 2.1e-29 | +1.00 |
+| `oracle` | -170.57 [-171.25, -169.88] | 1.6e-33 | -1.00 |
+| `m0_threshold` | -17.00 [-19.02, -15.05] | 1.9e-29 | -0.97 |
+| `random_matched` | +4.30 [+3.73, +4.88] | 2.3e-28 | +0.99 |
+| `yoked` | +3.16 [+2.58, +3.75] | 1.8e-19 | +0.83 |
+
+![naive play](figures/naive_play.png)
+
+Source: `results/naive_play.json` (per-game records incl. action logs are cached locally, not committed).
 <!-- END:naive_play -->
 
 ## Phase 4 — Can the mushroom body reach the escape circuit?
