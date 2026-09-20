@@ -1,0 +1,56 @@
+{
+  "experiment": "brian2_crosscheck",
+  "connectome": "flywire630",
+  "grn_rate_hz": 100.0,
+  "n_steps": 10000,
+  "dtype": "float64",
+  "all_identical": true,
+  "trials": [
+    {
+      "identical": true,
+      "brian2_spikes": 10269,
+      "engine_spikes": 10269,
+      "mismatched_spikes": 0,
+      "first_mismatch_step": null,
+      "trial": 0,
+      "brian2_wall_s": 18.0,
+      "engine_wall_s": 3.5,
+      "mn9_spikes_brian2": [
+        74,
+        51
+      ],
+      "mn9_spikes_engine": [
+        74,
+        51
+      ]
+    },
+    {
+      "identical": true,
+      "brian2_spikes": 9317,
+      "engine_spikes": 9317,
+      "mismatched_spikes": 0,
+      "first_mismatch_step": null,
+      "trial": 1,
+      "brian2_wall_s": 17.6,
+      "engine_wall_s": 3.3,
+      "mn9_spikes_brian2": [
+        68,
+        45
+      ],
+      "mn9_spikes_engine": [
+        68,
+        45
+      ]
+    }
+  ],
+  "meta": {
+    "timestamp_utc": "2026-09-20T19:05:44+00:00",
+    "git_commit": "",
+    "git_dirty": true,
+    "python": "3.12.12",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "torch": "2.14.0+cu130",
+    "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+    "cuda": "13.0"
+  }
+}
