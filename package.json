@@ -1,0 +1,27 @@
+{
+  "name": "dino-fly",
+  "private": true,
+  "version": "0.0.0",
+  "description": "A whole-brain Drosophila connectome model that plays Chrome Dino",
+  "license": "MIT",
+  "author": "Tair Kaldybayev",
+  "type": "module",
+  "packageManager": "pnpm@10.30.3",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "biome check .",
+    "format": "biome check --write ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.14",
+    "@types/node": "^26.6.2",
+    "@vitest/coverage-v8": "^5.0.1",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  }
+}

@@ -1,0 +1,40 @@
+# --- data & large artifacts (never commit files > 10 MB) ---
+/data/
+*.parquet
+*.pkl
+*.pt
+*.npz
+!brain/flybrain/data/*.npz
+checkpoints/
+brain/experiments/logs/
+brain/experiments/cache/
+
+# --- secrets / env ---
+.env
+.env.*
+!.env.example
+firmware/**/include/secrets.h
+
+# --- python ---
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.egg-info/
+
+# --- node ---
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# --- OS / editors ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json

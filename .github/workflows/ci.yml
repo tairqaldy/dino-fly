@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ts:
+    name: TypeScript (lint, types, tests, fixtures)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - name: Golden fixtures are up to date
+        run: |
+          pnpm --filter @dino-fly/dino-core gen-fixtures
+          git diff --exit-code -- packages/dino-core/fixtures
+
+  python:
+    name: Python (ruff, pytest on the synthetic connectome, docs in sync)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: brain
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: brain/uv.lock
+      - run: uv sync --extra cpu --locked
+      - run: uv run --no-sync ruff check .
+      - run: uv run --no-sync ruff format --check .
+      # CPU only: tests marked gpu / data / brian2 are deselected by default (see pyproject.toml).
+      - run: uv run --no-sync pytest
+      - name: RESEARCH.md tables match the committed results JSONs
+        run: uv run --no-sync python -m experiments.report --check

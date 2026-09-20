@@ -1,0 +1,61 @@
+cff-version: 1.2.0
+message: "If you use dino-fly, please cite this repository and the datasets and model it is built on (see references)."
+title: "dino-fly: a whole-brain Drosophila connectome model that plays Chrome Dino"
+type: software
+authors:
+  - family-names: Kaldybayev
+    given-names: Tair
+    alias: tairqaldy
+repository-code: "https://github.com/tairqaldy/dino-fly"
+license: MIT
+references:
+  - type: article
+    title: "A Drosophila computational brain model reveals sensorimotor processing"
+    authors:
+      - family-names: Shiu
+        given-names: Philip K.
+      - family-names: Sterne
+        given-names: Gabriella R.
+      - family-names: Spiller
+        given-names: Nico
+      - family-names: Scott
+        given-names: Kristin
+    journal: Nature
+    volume: 634
+    start: 210
+    end: 219
+    year: 2024
+    doi: 10.1038/s41586-024-07763-9
+    notes: "Whole-brain LIF model; author list abbreviated."
+  - type: article
+    title: "Neuronal wiring diagram of an adult brain"
+    authors:
+      - family-names: Dorkenwald
+        given-names: Sven
+      - name: "FlyWire Consortium"
+    journal: Nature
+    volume: 634
+    year: 2024
+    doi: 10.1038/s41586-024-07558-y
+    notes: "FlyWire connectome (materialization 783); author list abbreviated."
+  - type: article
+    title: "Whole-brain annotation and multi-connectome cell typing of Drosophila"
+    authors:
+      - family-names: Schlegel
+        given-names: Philipp
+      - name: "FlyWire Consortium"
+    journal: Nature
+    volume: 634
+    year: 2024
+    doi: 10.1038/s41586-024-07686-5
+    notes: "Cell-type annotations; author list abbreviated."
+  - type: article
+    title: "Neurotransmitter classification from electron microscopy images at synaptic sites in Drosophila melanogaster"
+    authors:
+      - family-names: Eckstein
+        given-names: Nils
+    journal: Cell
+    volume: 187
+    year: 2024
+    doi: 10.1016/j.cell.2024.03.016
+    notes: "Neurotransmitter predictions that determine synapse sign; author list abbreviated."

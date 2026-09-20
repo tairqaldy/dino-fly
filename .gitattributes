@@ -1,0 +1,8 @@
+# LF everywhere: golden fixtures and hashes must be byte-identical on Windows, Linux and macOS.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.gif binary
+*.npz binary
+*.parquet binary
