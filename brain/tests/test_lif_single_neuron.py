@@ -14,6 +14,14 @@ from flybrain.lif import LIFNetwork, LIFParams, ScheduledDrive
 P = LIFParams()
 
 
+def uval(net, neuron: int) -> float:
+    return float(net.state_mv([neuron])[0][0, 0])
+
+
+def gval(net, neuron: int) -> float:
+    return float(net.state_mv([neuron])[1][0, 0])
+
+
 def run_tiny(
     edges, n, kicks: dict[int, list[int]], n_steps, *, nonrefractory_targets=True, dtype=torch.float64, k=None
 ):
@@ -41,6 +49,7 @@ def test_rest_is_an_exact_fixed_point():
     res = net.run(500, record="counts")
     assert res.counts.sum() == 0
     assert torch.count_nonzero(net.u) == 0 and torch.count_nonzero(net.g) == 0
+    assert net.n_active == 0  # nothing was ever touched
 
 
 def test_kick_at_n_spikes_at_n_plus_1():
@@ -56,11 +65,11 @@ def test_psp_matches_closed_form(dtype, tol):
     for j in (0, 1, 7, 92, 400):
         _, net = run_tiny([(0, 1, count)], 2, {0: [0]}, 20 + j, dtype=dtype)
         expected = -(g0 / 3.0) * (math.exp(-j * 0.1 / 5.0) - math.exp(-j * 0.1 / 20.0))
-        assert float(net.u[1, 0]) == pytest.approx(expected, abs=tol)
-        assert float(net.g[1, 0]) == pytest.approx(g0 * math.exp(-j * 0.1 / 5.0), abs=tol * 10)
+        assert uval(net, 1) == pytest.approx(expected, abs=tol)
+        assert gval(net, 1) == pytest.approx(g0 * math.exp(-j * 0.1 / 5.0), abs=tol * 10)
     # peak of the PSP is ~0.157 * g0 at ~9.2 ms
     _, net = run_tiny([(0, 1, count)], 2, {0: [0]}, 20 + 92, dtype=torch.float64)
-    assert float(net.u[1, 0]) == pytest.approx(0.1575 * g0, rel=2e-3)
+    assert uval(net, 1) == pytest.approx(0.1575 * g0, rel=2e-3)
 
 
 def test_earliest_postsynaptic_spike_is_m_plus_19():
@@ -74,7 +83,7 @@ def test_refractory_is_22_steps_and_kicks_inside_it_are_dropped():
     m = 11
     spikes, net = run_tiny([(0, 1, 1)], 2, {0: [10, *range(m + 1, m + 22)]}, 80, nonrefractory_targets=False)
     assert np.flatnonzero(spikes[:, 0]).tolist() == [m]
-    assert float(net.u[0, 0]) == 0.0
+    assert uval(net, 0) == 0.0
 
     spikes, _ = run_tiny([(0, 1, 1)], 2, {0: [10, m + 21, m + 22]}, 80, nonrefractory_targets=False)
     assert np.flatnonzero(spikes[:, 0]).tolist() == [m, m + 23]
@@ -91,17 +100,17 @@ def test_synaptic_input_during_refractory_is_dropped_not_banked():
     edges = [(0, 1, 50)]
     spikes, net = run_tiny(edges, 2, {0: [20], 1: [30]}, 60, nonrefractory_targets=False)
     assert np.flatnonzero(spikes[:, 1]).tolist() == [31]
-    assert float(net.g[1, 0]) == 0.0 and float(net.u[1, 0]) == 0.0
+    assert gval(net, 1) == 0.0 and uval(net, 1) == 0.0
     # control: same input outside the refractory window is integrated
     spikes, net = run_tiny(edges, 2, {0: [20]}, 60, nonrefractory_targets=False)
-    assert float(net.g[1, 0]) > 0.0
+    assert gval(net, 1) > 0.0
 
 
 def test_autapse_input_arrives_inside_refractory_and_is_dropped():
     # spike at m → own input at m+18 < m+22 → dropped, so an autapse can never re-excite its neuron by itself
     spikes, net = run_tiny([(0, 0, 6000)], 1, {0: [5]}, 200, nonrefractory_targets=False)
     assert np.flatnonzero(spikes[:, 0]).tolist() == [6]
-    assert float(net.g[0, 0]) == 0.0
+    assert gval(net, 0) == 0.0
 
 
 def test_duplicate_edges_are_summed():
@@ -113,7 +122,7 @@ def test_duplicate_edges_are_summed():
 def test_inhibition_cancels_excitation_exactly():
     spikes, net = run_tiny([(0, 2, 6000), (1, 2, -6000)], 3, {0: [4], 1: [4]}, 80)
     assert not spikes[:, 2].any()
-    assert float(net.g[2, 0]) == 0.0  # integer accumulation: +6000 - 6000 == 0 exactly
+    assert gval(net, 2) == 0.0  # integer accumulation: +6000 - 6000 == 0 exactly
 
 
 def test_ablated_neuron_cannot_spike_but_still_integrates():
@@ -125,7 +134,7 @@ def test_ablated_neuron_cannot_spike_but_still_integrates():
     net.ablate(np.array([1]))
     res = net.run(60, record="counts")
     assert res.counts[1, 0] == 0 and res.counts[0, 0] == 1
-    assert float(net.u[1, 0]) > P.threshold_u
+    assert uval(net, 1) > P.threshold_u
     net.ablate(None)
     net.reset()
     assert net.run(60, record="counts").counts[1, 0] == 1

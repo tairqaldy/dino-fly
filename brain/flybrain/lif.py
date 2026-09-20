@@ -31,6 +31,11 @@ Implementation notes:
     as a CUDA graph (`use_cuda_graph=True`). Arithmetic uses plain IEEE mul/add kernels (no fused a*b+c), so
     CPU, GPU-eager and CUDA-graph paths agree bit-for-bit.
   * Poisson drive uses counter-based random numbers (`flybrain.rng`): results do not depend on B, K or device.
+  * Exact active set: a neuron at rest that never received input is a fixed point of the dynamics (u = g = 0,
+    no spike, ever), and in this model >99 % of the brain is in that state at any time. State rows are therefore
+    *slots* that are assigned to neurons the first time they receive input (or are driven), and every per-step
+    kernel runs on the prefix of assigned slots only. `active_set=False` pre-assigns slot i = neuron i (dense
+    mode). Both modes are the same code path and give identical spikes (tests/test_lif_invariance.py).
 """
 
 from __future__ import annotations
@@ -171,6 +176,27 @@ class RunResult:
 
 
 # ----------------------------------------------------------------------------- engine
+SLOT_BUCKET = 4096  # active-set capacity grows in buckets so CUDA graphs are re-captured rarely
+
+
+class _Views:
+    """Prefix views [:cap] of the state tensors (rebuilt whenever the active-set capacity changes)."""
+
+    def __init__(self, net: LIFNetwork, cap: int) -> None:
+        self.cap = cap
+        self.u = net.u[:cap]
+        self.g = net.g[:cap]
+        self.refr_until = net._refr_until[:cap]
+        self.ref_steps = net._ref_steps_s[:cap]
+        self.ref_tmp = net._ref_tmp[:cap]
+        self.can_spike = net._can_spike_s[:cap]
+        self.ring = net._ring[:, :cap]
+        self.inp = net._inp[:, :cap]
+        self.tmp = net._tmp[:cap]
+        self.nr = net._nr[:cap]
+        self.spk = net._spk_buf[:, :cap]
+
+
 class LIFNetwork:
     def __init__(
         self,
@@ -182,12 +208,13 @@ class LIFNetwork:
         dtype: torch.dtype = torch.float32,
         chunk_steps: int | None = None,
         use_cuda_graph: bool = False,
+        active_set: bool = True,
         max_events_per_slice: int = 4_000_000,
     ) -> None:
         self.params = params or LIFParams()
         p = self.params
         if p.v_reset_mv != p.v_rest_mv:
-            # The (0, 0) fixed point of refractory neurons — and with it the mask simplification — needs this.
+            # The (0, 0) fixed point of refractory / untouched neurons needs this.
             raise NotImplementedError("engine assumes v_reset == v_rest (true for the published model)")
         self.conn = conn
         self.n = conn.n
@@ -197,12 +224,11 @@ class LIFNetwork:
         self.delay = p.delay_steps
         self.k = int(chunk_steps or self.delay)
         if not 1 <= self.k <= self.delay:
-            raise ValueError(
-                f"chunk_steps must be in [1, {self.delay}] (spikes must not affect their own chunk)"
-            )
+            raise ValueError(f"chunk_steps must be in [1, {self.delay}] (spikes must not affect their own chunk)")
         self.ring_len = self.delay + self.k
         self.max_events = int(max_events_per_slice)
         self.use_cuda_graph = bool(use_cuda_graph) and self.device.type == "cuda"
+        self.active_set = bool(active_set)
 
         dev, n, b = self.device, self.n, self.b
         ptr, post, weight = conn.out_adjacency()
@@ -217,13 +243,13 @@ class LIFNetwork:
         self._w_syn = p.w_syn_mv
         self._kick_mv = p.kick_mv
 
+        # slot-indexed state (row s belongs to neuron _neuron_of_slot[s])
         self.u = torch.zeros(n, b, dtype=dtype, device=dev)
         self.g = torch.zeros(n, b, dtype=dtype, device=dev)
         self._refr_until = torch.zeros(n, b, dtype=torch.int32, device=dev)
-        self._ref_steps = torch.full((n, 1), p.ref_steps, dtype=torch.int32, device=dev)
+        self._ref_steps_s = torch.full((n, 1), p.ref_steps, dtype=torch.int32, device=dev)
         self._ref_tmp = torch.zeros(n, 1, dtype=torch.int32, device=dev)
-        self._can_spike = torch.ones(n, 1, dtype=torch.bool, device=dev)
-        self._has_ablation = False
+        self._can_spike_s = torch.ones(n, 1, dtype=torch.bool, device=dev)
         self._ring = torch.zeros(self.ring_len, n, b, dtype=torch.int32, device=dev)
         self._inp = torch.zeros(1, n, b, dtype=torch.int32, device=dev)
         self._tmp = torch.zeros(n, b, dtype=dtype, device=dev)
@@ -232,49 +258,99 @@ class LIFNetwork:
         self._step_i32 = torch.zeros(1, dtype=torch.int32, device=dev)
         self._slot = torch.zeros(1, dtype=torch.int64, device=dev)
 
+        # neuron-indexed parameters and bookkeeping
+        self._ref_steps_n = torch.full((n,), p.ref_steps, dtype=torch.int32, device=dev)
+        self._can_spike_n = torch.ones(n, dtype=torch.bool, device=dev)
+        self._has_ablation = False
+        self._slot_of = torch.full((n,), -1, dtype=torch.int64, device=dev)
+        self._neuron_of_slot = torch.zeros(n, dtype=torch.int64, device=dev)
+        self._n_act = 0
+        self._v = _Views(self, 0)
+
         self.step = 0  # global step counter (host side)
-        self._col_start = torch.zeros(
-            b, dtype=torch.int64, device=dev
-        )  # step at which each column's trial began
-        self.spike_counts = torch.zeros(n, b, dtype=torch.int64, device=dev)
+        self._col_start = torch.zeros(b, dtype=torch.int64, device=dev)  # step at which each column's trial began
+        self.spike_counts = torch.zeros(n, b, dtype=torch.int64, device=dev)  # neuron-indexed
 
         self._drive: PoissonDrive | ScheduledDrive | None = None
-        self._stim_idx: torch.Tensor | None = None
+        self._stim_neurons: torch.Tensor | None = None
+        self._stim_slots: torch.Tensor | None = None
         self._kick_buf: torch.Tensor | None = None
         self._graphs: dict[int, torch.cuda.CUDAGraph] = {}
+        self._init_active_set()
+
+    # ------------------------------------------------------------------ active set
+    @property
+    def n_active(self) -> int:
+        return self._n_act
+
+    def _init_active_set(self) -> None:
+        self._slot_of.fill_(-1)
+        self._n_act = 0
+        if not self.active_set:
+            self._activate(torch.arange(self.n, device=self.device))
+        elif self._stim_neurons is not None:
+            self._activate(self._stim_neurons)
+        else:
+            self._set_capacity()
+
+    def _activate(self, neurons: torch.Tensor) -> None:
+        """Give slots to `neurons` (unique, all currently without a slot). Their state rows are at rest (zero)."""
+        m = int(neurons.numel())
+        if m:
+            slots = torch.arange(self._n_act, self._n_act + m, device=self.device)
+            self._slot_of[neurons] = slots
+            self._neuron_of_slot[slots] = neurons
+            self._ref_steps_s[slots, 0] = self._ref_steps_n[neurons]
+            self._can_spike_s[slots, 0] = self._can_spike_n[neurons]
+            self._n_act += m
+        self._set_capacity()
+
+    def _set_capacity(self) -> None:
+        cap = min(self.n, -(-max(self._n_act, 1) // SLOT_BUCKET) * SLOT_BUCKET)
+        if cap != self._v.cap:
+            self._v = _Views(self, cap)
+            self._graphs.clear()
+
+    def _refresh_slot_params(self) -> None:
+        if self._n_act:
+            neurons = self._neuron_of_slot[: self._n_act]
+            self._ref_steps_s[: self._n_act, 0] = self._ref_steps_n[neurons]
+            self._can_spike_s[: self._n_act, 0] = self._can_spike_n[neurons]
+        self._graphs.clear()
+
+    def _slots(self, neurons: torch.Tensor) -> torch.Tensor:
+        return self._slot_of[neurons]
 
     # ------------------------------------------------------------------ configuration
-    def set_drive(
-        self, drive: PoissonDrive | ScheduledDrive | None, *, nonrefractory_targets: bool = True
-    ) -> None:
+    def set_drive(self, drive: PoissonDrive | ScheduledDrive | None, *, nonrefractory_targets: bool = True) -> None:
         """Attach a drive. Published convention: Poisson-driven neurons have refractory period 0."""
-        self._ref_steps.fill_(self.params.ref_steps)
+        self._ref_steps_n.fill_(self.params.ref_steps)
         self._drive = drive
-        self._graphs.clear()
         if drive is None:
-            self._stim_idx, self._kick_buf = None, None
+            self._stim_neurons = self._stim_slots = self._kick_buf = None
+            self._refresh_slot_params()
             return
         if drive.batch_size != self.b:
             raise ValueError("drive batch size mismatch")
-        self._stim_idx = torch.as_tensor(drive.neuron_idx, device=self.device)
-        self._kick_buf = torch.zeros(
-            self.k, len(drive.neuron_idx), self.b, dtype=torch.bool, device=self.device
-        )
+        self._stim_neurons = torch.as_tensor(drive.neuron_idx, device=self.device)
         if nonrefractory_targets:
-            self._ref_steps[self._stim_idx] = 0
+            self._ref_steps_n[self._stim_neurons] = 0
+        fresh = self._stim_neurons[self._slot_of[self._stim_neurons] < 0]
+        self._activate(fresh)
+        self._stim_slots = self._slot_of[self._stim_neurons]
+        self._kick_buf = torch.zeros(self.k, len(drive.neuron_idx), self.b, dtype=torch.bool, device=self.device)
+        self._refresh_slot_params()
 
     def ablate(self, neuron_idx: np.ndarray | None) -> None:
         """Neurons that cannot spike (Kir2.1-like silencing). `None` clears the ablation."""
-        self._can_spike.fill_(True)
+        self._can_spike_n.fill_(True)
         self._has_ablation = neuron_idx is not None and len(neuron_idx) > 0
         if self._has_ablation:
-            self._can_spike[torch.as_tensor(np.asarray(neuron_idx, dtype=np.int64), device=self.device)] = (
-                False
-            )
-        self._graphs.clear()
+            self._can_spike_n[torch.as_tensor(np.asarray(neuron_idx, dtype=np.int64), device=self.device)] = False
+        self._refresh_slot_params()
 
     def reset(self, columns: np.ndarray | None = None) -> None:
-        """Reset state, in-flight input and trial clock of the given columns (default: all)."""
+        """Reset state, in-flight input and trial clock of the given columns (default: all columns)."""
         if columns is None:
             self.u.zero_()
             self.g.zero_()
@@ -282,47 +358,53 @@ class LIFNetwork:
             self._ring.zero_()
             self.spike_counts.zero_()
             self._col_start.fill_(self.step)
+            self._init_active_set()  # shrink back to the driven neurons
+            if self._stim_neurons is not None:
+                self._stim_slots = self._slot_of[self._stim_neurons]
+            self._refresh_slot_params()
             return
         cols = torch.as_tensor(np.asarray(columns, dtype=np.int64), device=self.device)
         if cols.numel() == 0:
             return
-        self.u[:, cols] = 0
-        self.g[:, cols] = 0
-        self._refr_until[:, cols] = 0
-        self._ring[:, :, cols] = 0
+        cap = self._v.cap
+        self.u[:cap, cols] = 0
+        self.g[:cap, cols] = 0
+        self._refr_until[:cap, cols] = 0
+        self._ring[:, :cap, cols] = 0
         self.spike_counts[:, cols] = 0
         self._col_start[cols] = self.step
 
     # ------------------------------------------------------------------ the model
     def _step_ops(self, k: int) -> None:
-        """One dt. Only device-side tensors → identical in eager mode and inside a CUDA graph."""
-        u, g, tmp, nr = self.u, self.g, self._tmp, self._nr
+        """One dt on the active slots. Only device-side tensors → identical in eager mode and inside a CUDA graph."""
+        v = self._v
+        u, g, tmp, nr = v.u, v.g, v.tmp, v.nr
         # 1) integrate (exact propagator; plain IEEE mul/add — no fused multiply-add patterns)
         torch.mul(g, self._c1, out=tmp)
         u.mul_(self._em)
         u.add_(tmp)
         g.mul_(self._es)
         # 2) threshold
-        spk = self._spk_buf[k]
+        spk = v.spk[k]
         torch.gt(u, self._th, out=spk)
         if self._has_ablation:
-            spk.logical_and_(self._can_spike)
+            spk.logical_and_(v.can_spike)
         # 3) deliver delayed input + Poisson kicks; both are dropped for refractory neurons
-        torch.le(self._refr_until, self._step_i32, out=nr)
-        torch.index_select(self._ring, 0, self._slot, out=self._inp)
-        self._ring.index_fill_(0, self._slot, 0)
-        self._inp.mul_(nr)
-        tmp.copy_(self._inp[0])
+        torch.le(v.refr_until, self._step_i32, out=nr)
+        torch.index_select(v.ring, 0, self._slot, out=v.inp)
+        v.ring.index_fill_(0, self._slot, 0)
+        v.inp.mul_(nr)
+        tmp.copy_(v.inp[0])
         tmp.mul_(self._w_syn)
         g.add_(tmp)
-        if self._stim_idx is not None:
-            live = self._kick_buf[k] & nr.index_select(0, self._stim_idx)
-            u.index_add_(0, self._stim_idx, live.to(self.dtype).mul_(self._kick_mv))
+        if self._stim_slots is not None:
+            live = self._kick_buf[k] & nr.index_select(0, self._stim_slots)
+            u.index_add_(0, self._stim_slots, live.to(self.dtype).mul_(self._kick_mv))
         # 4) reset (erases anything delivered to a neuron in the step it spiked = Brian2's drop)
         u.masked_fill_(spk, 0.0)
         g.masked_fill_(spk, 0.0)
-        torch.add(self._ref_steps, self._step_i32, out=self._ref_tmp)
-        torch.where(spk, self._ref_tmp, self._refr_until, out=self._refr_until)
+        torch.add(v.ref_steps, self._step_i32, out=v.ref_tmp)
+        torch.where(spk, v.ref_tmp, v.refr_until, out=v.refr_until)
         # 5) advance device-side clock
         self._step_i32.add_(1)
         self._slot.add_(1)
@@ -338,7 +420,7 @@ class LIFNetwork:
             return
         graph = self._graphs.get(k_len)
         if graph is None:
-            # Warm-up on a side stream, then restore state, then capture (standard CUDA-graph recipe).
+            # Warm-up on a side stream, restore state, capture (standard CUDA-graph recipe).
             saved = [t.clone() for t in self._graph_state()]
             side = torch.cuda.Stream()
             side.wait_stream(torch.cuda.current_stream())
@@ -349,29 +431,29 @@ class LIFNetwork:
             graph = torch.cuda.CUDAGraph()
             with torch.cuda.graph(graph):
                 self._run_chunk_ops(k_len)
-            self._restore(saved)  # capture does not execute, but keep state pristine regardless
+            self._restore(saved)
             self._graphs[k_len] = graph
         graph.replay()
 
     def _graph_state(self) -> list[torch.Tensor]:
-        return [self.u, self.g, self._refr_until, self._ring, self._step_i32, self._slot, self._spk_buf]
+        v = self._v
+        return [v.u, v.g, v.refr_until, v.ring, self._step_i32, self._slot, v.spk]
 
     def _restore(self, saved: list[torch.Tensor]) -> None:
         for dst, src in zip(self._graph_state(), saved, strict=True):
             dst.copy_(src)
 
     def _propagate(self, k_len: int, step0: int, record_spikes: list | None, count: bool) -> None:
-        idx = self._spk_buf[:k_len].nonzero()  # [M, 3] = (k, neuron, column); the one host sync per chunk
+        idx = self._v.spk[:k_len].nonzero()  # [M, 3] = (k, slot, column); the one host sync per chunk
         m = idx.shape[0]
         if m == 0:
             return
-        kk, nn, bb = idx[:, 0], idx[:, 1], idx[:, 2]
+        kk, bb = idx[:, 0], idx[:, 2]
+        nn = self._neuron_of_slot[idx[:, 1]]
         if count:
             self.spike_counts.index_put_((nn, bb), torch.ones_like(nn), accumulate=True)
         if record_spikes is not None:
-            rec = idx.clone()
-            rec[:, 0] += step0
-            record_spikes.append(rec.cpu())
+            record_spikes.append(torch.stack([kk + step0, nn, bb], dim=1).cpu())
         deg = self._out_deg[nn]
         cum = deg.cumsum(0)
         total = int(cum[-1])
@@ -385,9 +467,9 @@ class LIFNetwork:
             while lo < m:
                 base = cum_cpu[lo - 1] if lo else 0
                 hi = int(np.searchsorted(cum_cpu, base + self.max_events, side="right"))
-                hi = max(hi, lo + 1)
-                bounds.append((lo, min(hi, m)))
-                lo = min(hi, m)
+                hi = min(max(hi, lo + 1), m)
+                bounds.append((lo, hi))
+                lo = hi
         ring_flat = self._ring.view(-1)
         for lo, hi in bounds:
             d = deg[lo:hi]
@@ -397,19 +479,20 @@ class LIFNetwork:
             rep = torch.repeat_interleave(torch.arange(hi - lo, device=self.device), d, output_size=n_ev)
             first = (d.cumsum(0) - d)[rep]
             edge = self._out_ptr[nn[lo:hi]][rep] + (torch.arange(n_ev, device=self.device) - first)
-            slot = (step0 + kk[lo:hi][rep] + self.delay) % self.ring_len
-            flat = (slot * self.n + self._out_post[edge]) * self.b + bb[lo:hi][rep]
+            targets = self._out_post[edge]
+            tslot = self._slot_of[targets]
+            if self.active_set:
+                untouched = tslot < 0
+                if bool(untouched.any()):
+                    self._activate(torch.unique(targets[untouched]))
+                    tslot = self._slot_of[targets]
+            ring_slot = (step0 + kk[lo:hi][rep] + self.delay) % self.ring_len
+            flat = (ring_slot * self.n + tslot) * self.b + bb[lo:hi][rep]
             ring_flat.index_add_(0, flat, self._out_w[edge])
 
     # ------------------------------------------------------------------ running
     @torch.no_grad()
-    def run(
-        self,
-        n_steps: int,
-        *,
-        record: str | None = "counts",
-        watch: np.ndarray | None = None,
-    ) -> RunResult:
+    def run(self, n_steps: int, *, record: str | None = "counts", watch: np.ndarray | None = None) -> RunResult:
         """Advance all columns by n_steps.
 
         record: None | "counts" (per-neuron spike counts) | "spikes" (also every spike as (step, neuron, column)).
@@ -420,9 +503,7 @@ class LIFNetwork:
         if record is not None:
             self.spike_counts.zero_()
         spike_list: list | None = [] if record == "spikes" else None
-        watch_t = (
-            None if watch is None else torch.as_tensor(np.asarray(watch, dtype=np.int64), device=self.device)
-        )
+        watch_t = None if watch is None else torch.as_tensor(np.asarray(watch, dtype=np.int64), device=self.device)
         if watch_t is not None:
             w_counts = torch.zeros(len(watch_t), self.b, dtype=torch.int64, device=self.device)
             w_first = torch.full((len(watch_t), self.b), -1, dtype=torch.int64, device=self.device)
@@ -435,32 +516,41 @@ class LIFNetwork:
             self._step_i32.fill_(step0)
             self._slot.fill_(step0 % self.ring_len)
             if self._drive is not None:
-                rel = torch.arange(step0, step0 + k_len, device=self.device).view(
-                    -1, 1, 1
-                ) - self._col_start.view(1, 1, -1)
+                rel = torch.arange(step0, step0 + k_len, device=self.device).view(-1, 1, 1) - self._col_start.view(1, 1, -1)
                 self._kick_buf[:k_len] = self._drive.kicks(rel)
             self._run_chunk(k_len)
             self.step += k_len
-            self._propagate(k_len, step0, spike_list, count=record is not None)
-            if watch_t is not None:
-                w = self._spk_buf[:k_len].index_select(1, watch_t)  # [k_len, n_watch, B]
+            if watch_t is not None:  # read before propagation may re-bucket the views
+                ws = self._slot_of[watch_t]
+                w = self._v.spk[:k_len].index_select(1, ws.clamp(min=0)) & (ws >= 0).view(1, -1, 1)
                 w_counts += w.sum(0)
                 first_k = w.to(torch.int8).argmax(0) + (step0 - start)
-                new = w.any(0) & (w_first < 0)
-                w_first = torch.where(new, first_k, w_first)
+                w_first = torch.where(w.any(0) & (w_first < 0), first_k, w_first)
+            self._propagate(k_len, step0, spike_list, count=record is not None)
             done += k_len
 
         result = RunResult(n_steps=n_steps, dt_ms=self.params.dt_ms)
         if record is not None:
             result.counts = self.spike_counts.cpu().numpy()
         if spike_list is not None:
-            result.spikes = torch.cat(spike_list).numpy() if spike_list else np.zeros((0, 3), dtype=np.int64)
+            spikes = torch.cat(spike_list).numpy() if spike_list else np.zeros((0, 3), dtype=np.int64)
+            # canonical order (step, neuron, column): slot numbering must not leak into results
+            result.spikes = spikes[np.lexsort((spikes[:, 2], spikes[:, 1], spikes[:, 0]))]
         if watch_t is not None:
             result.watch_counts = w_counts.cpu().numpy()
             result.watch_first_step = w_first.cpu().numpy()
+        result.meta["n_active"] = self._n_act
         return result
+
+    def state_mv(self, neuron_idx: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """(u, g) in mV of selected neurons, [n, B] each (neuron-indexed view of the slot-indexed state)."""
+        idx = torch.as_tensor(np.asarray(neuron_idx, dtype=np.int64), device=self.device)
+        slots = self._slot_of[idx]
+        ok = (slots >= 0).view(-1, 1)
+        u = torch.where(ok, self.u.index_select(0, slots.clamp(min=0)), torch.zeros((), dtype=self.dtype, device=self.device))
+        g = torch.where(ok, self.g.index_select(0, slots.clamp(min=0)), torch.zeros((), dtype=self.dtype, device=self.device))
+        return u.cpu().numpy(), g.cpu().numpy()
 
     def membrane_mv(self, neuron_idx: np.ndarray) -> np.ndarray:
         """Current membrane potential (mV) of selected neurons, [n, B]."""
-        idx = torch.as_tensor(np.asarray(neuron_idx, dtype=np.int64), device=self.device)
-        return (self.u.index_select(0, idx) + self.params.v_rest_mv).cpu().numpy()
+        return self.state_mv(neuron_idx)[0] + self.params.v_rest_mv

@@ -23,6 +23,7 @@ def make(
     rate=120.0,
     graph=False,
     max_events=4_000_000,
+    active_set=True,
 ):
     g = synth.meta["groups"]
     stim = np.array(g["SYN_GRN"] + g["LPLC2"] + g["LC4"], dtype=np.int64)
@@ -35,6 +36,7 @@ def make(
         chunk_steps=k,
         use_cuda_graph=graph,
         max_events_per_slice=max_events,
+        active_set=active_set,
     )
     drive = PoissonDrive(stim, batch_size=b, dt_ms=P.dt_ms, device=device)
     drive.set_rates(np.full(len(stim), rate))
@@ -131,6 +133,7 @@ def test_gpu_matches_cpu_bit_for_bit(synth: Connectome, dtype):
     rc, rg = cpu.run(1500, record="spikes"), gpu.run(1500, record="spikes")
     assert rc.spikes.shape[0] > 1000
     assert np.array_equal(rc.spikes, rg.spikes)
+    assert cpu.n_active == gpu.n_active
     assert torch.equal(cpu.u, gpu.u.cpu()) and torch.equal(cpu.g, gpu.g.cpu())
 
 
@@ -142,3 +145,37 @@ def test_cuda_graph_matches_eager_bit_for_bit(synth: Connectome):
     assert re.spikes.shape[0] > 1000
     assert np.array_equal(re.spikes, rg.spikes)
     assert torch.equal(eager.u, graph.u) and torch.equal(eager.g, graph.g)
+
+
+def test_active_set_is_exact(synth: Connectome):
+    """Updating only neurons that ever received input gives the same spikes as updating all of them."""
+    dense, _ = make(synth, [1, 2, 3], k=10, active_set=False)
+    sparse, _ = make(synth, [1, 2, 3], k=10, active_set=True)
+    assert dense.n_active == synth.n and sparse.n_active == 70  # only the driven neurons so far
+    rd, rs = dense.run(1500, record="spikes"), sparse.run(1500, record="spikes")
+    assert rd.spikes.shape[0] > 1000
+    assert np.array_equal(rd.spikes, rs.spikes)
+    assert 70 < sparse.n_active <= synth.n
+    probe = np.arange(synth.n)
+    for a, b in zip(dense.state_mv(probe), sparse.state_mv(probe), strict=True):
+        assert np.array_equal(a, b)
+    # a full reset shrinks the active set again and the next run is reproducible
+    sparse.reset()
+    assert sparse.n_active == 70
+    sparse._drive.set_seeds(np.array([1, 2, 3]))
+    again = sparse.run(1500, record="spikes").spikes
+    again[:, 0] -= 1500  # spike steps are global
+    assert np.array_equal(again, rs.spikes)
+
+
+def test_active_set_with_small_buckets_and_watch(synth: Connectome, monkeypatch):
+    import flybrain.lif as lif
+
+    monkeypatch.setattr(lif, "SLOT_BUCKET", 16)  # force many capacity changes
+    gf = np.array(synth.meta["groups"]["DNp01"])
+    a, _ = make(synth, [5, 6], k=7, active_set=True)
+    b, _ = make(synth, [5, 6], k=7, active_set=False)
+    ra, rb = a.run(900, record="spikes", watch=gf), b.run(900, record="spikes", watch=gf)
+    assert np.array_equal(ra.spikes, rb.spikes)
+    assert np.array_equal(ra.watch_counts, rb.watch_counts) and ra.watch_counts.sum() > 0
+    assert np.array_equal(ra.watch_first_step, rb.watch_first_step)
