@@ -1,0 +1,220 @@
+{
+  "experiment": "benchmark",
+  "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+  "torch": "2.14.0+cu130",
+  "connectome": "flywire783",
+  "neurons": 138639,
+  "edges": 15091983,
+  "warmup_steps": 360,
+  "measure_steps": 2000,
+  "rows": [
+    {
+      "path": "eager",
+      "batch": 1,
+      "chunk_steps": 18,
+      "drive": "rest",
+      "ms_per_step": 0.33209029999852646,
+      "realtime_per_brain": 0.3011229174728793,
+      "realtime_aggregate": 0.3011229174728793,
+      "spikes_per_bio_s_per_brain": 0.0,
+      "peak_vram_gb": 0.213433856
+    },
+    {
+      "path": "eager",
+      "batch": 1,
+      "chunk_steps": 18,
+      "drive": "sugar GRNs 100 Hz",
+      "ms_per_step": 0.3727376499955426,
+      "realtime_per_brain": 0.26828521347708195,
+      "realtime_aggregate": 0.26828521347708195,
+      "spikes_per_bio_s_per_brain": 10070.0,
+      "peak_vram_gb": 0.213750784
+    },
+    {
+      "path": "eager",
+      "batch": 8,
+      "chunk_steps": 18,
+      "drive": "rest",
+      "ms_per_step": 0.35531859999900917,
+      "realtime_per_brain": 0.28143756054504004,
+      "realtime_aggregate": 2.2515004843603204,
+      "spikes_per_bio_s_per_brain": 0.0,
+      "peak_vram_gb": 0.400591872
+    },
+    {
+      "path": "eager",
+      "batch": 8,
+      "chunk_steps": 18,
+      "drive": "sugar GRNs 100 Hz",
+      "ms_per_step": 0.4095522499992512,
+      "realtime_per_brain": 0.24416908953664113,
+      "realtime_aggregate": 1.953352716293129,
+      "spikes_per_bio_s_per_brain": 10355.0,
+      "peak_vram_gb": 0.402557952
+    },
+    {
+      "path": "eager",
+      "batch": 32,
+      "chunk_steps": 18,
+      "drive": "rest",
+      "ms_per_step": 1.5028853500043624,
+      "realtime_per_brain": 0.06653867508902774,
+      "realtime_aggregate": 2.1292376028488875,
+      "spikes_per_bio_s_per_brain": 0.0,
+      "peak_vram_gb": 1.035843072
+    },
+    {
+      "path": "eager",
+      "batch": 32,
+      "chunk_steps": 18,
+      "drive": "sugar GRNs 100 Hz",
+      "ms_per_step": 1.6301880500031984,
+      "realtime_per_brain": 0.061342616270438126,
+      "realtime_aggregate": 1.96296372065402,
+      "spikes_per_bio_s_per_brain": 10186.875,
+      "peak_vram_gb": 1.043864576
+    },
+    {
+      "path": "eager",
+      "batch": 64,
+      "chunk_steps": 18,
+      "drive": "rest",
+      "ms_per_step": 3.573288549996505,
+      "realtime_per_brain": 0.02798542535841328,
+      "realtime_aggregate": 1.7910672229384499,
+      "spikes_per_bio_s_per_brain": 0.0,
+      "peak_vram_gb": 1.8829824
+    },
+    {
+      "path": "eager",
+      "batch": 64,
+      "chunk_steps": 18,
+      "drive": "sugar GRNs 100 Hz",
+      "ms_per_step": 3.8469692500002566,
+      "realtime_per_brain": 0.02599448903834969,
+      "realtime_aggregate": 1.6636472984543802,
+      "spikes_per_bio_s_per_brain": 10198.28125,
+      "peak_vram_gb": 1.896363008
+    },
+    {
+      "path": "cuda-graph",
+      "batch": 1,
+      "chunk_steps": 18,
+      "drive": "rest",
+      "ms_per_step": 0.1669508000049973,
+      "realtime_per_brain": 0.5989788608201143,
+      "realtime_aggregate": 0.5989788608201143,
+      "spikes_per_bio_s_per_brain": 0.0,
+      "peak_vram_gb": 0.238550016
+    },
+    {
+      "path": "cuda-graph",
+      "batch": 1,
+      "chunk_steps": 18,
+      "drive": "sugar GRNs 100 Hz",
+      "ms_per_step": 0.26173459999699844,
+      "realtime_per_brain": 0.38206641384496665,
+      "realtime_aggregate": 0.38206641384496665,
+      "spikes_per_bio_s_per_brain": 10070.0,
+      "peak_vram_gb": 0.238550016
+    },
+    {
+      "path": "cuda-graph",
+      "batch": 8,
+      "chunk_steps": 18,
+      "drive": "rest",
+      "ms_per_step": 0.342515349999303,
+      "realtime_per_brain": 0.29195771809994353,
+      "realtime_aggregate": 2.3356617447995482,
+      "spikes_per_bio_s_per_brain": 0.0,
+      "peak_vram_gb": 0.594440192
+    },
+    {
+      "path": "cuda-graph",
+      "batch": 8,
+      "chunk_steps": 18,
+      "drive": "sugar GRNs 100 Hz",
+      "ms_per_step": 0.4521669500027201,
+      "realtime_per_brain": 0.2211572517615417,
+      "realtime_aggregate": 1.7692580140923335,
+      "spikes_per_bio_s_per_brain": 10355.0,
+      "peak_vram_gb": 0.594440192
+    },
+    {
+      "path": "cuda-graph",
+      "batch": 32,
+      "chunk_steps": 18,
+      "drive": "rest",
+      "ms_per_step": 1.4676743000018178,
+      "realtime_per_brain": 0.06813500788279535,
+      "realtime_aggregate": 2.180320252249451,
+      "spikes_per_bio_s_per_brain": 0.0,
+      "peak_vram_gb": 1.807992832
+    },
+    {
+      "path": "cuda-graph",
+      "batch": 32,
+      "chunk_steps": 18,
+      "drive": "sugar GRNs 100 Hz",
+      "ms_per_step": 1.7268199500031187,
+      "realtime_per_brain": 0.05790991701237839,
+      "realtime_aggregate": 1.8531173443961084,
+      "spikes_per_bio_s_per_brain": 10186.875,
+      "peak_vram_gb": 1.807992832
+    },
+    {
+      "path": "cuda-graph",
+      "batch": 64,
+      "chunk_steps": 18,
+      "drive": "rest",
+      "ms_per_step": 3.568913449998945,
+      "realtime_per_brain": 0.028019732448269254,
+      "realtime_aggregate": 1.7932628766892322,
+      "spikes_per_bio_s_per_brain": 0.0,
+      "peak_vram_gb": 3.426193408
+    },
+    {
+      "path": "cuda-graph",
+      "batch": 64,
+      "chunk_steps": 18,
+      "drive": "sugar GRNs 100 Hz",
+      "ms_per_step": 3.6314181000052486,
+      "realtime_per_brain": 0.027537451553665902,
+      "realtime_aggregate": 1.7623968994346177,
+      "spikes_per_bio_s_per_brain": 10198.28125,
+      "peak_vram_gb": 3.426193408
+    },
+    {
+      "path": "eager",
+      "batch": 32,
+      "chunk_steps": 1,
+      "drive": "sugar GRNs 100 Hz",
+      "ms_per_step": 2.7875615500015556,
+      "realtime_per_brain": 0.03587364734599105,
+      "realtime_aggregate": 1.1479567150717136,
+      "spikes_per_bio_s_per_brain": 10186.875,
+      "peak_vram_gb": 0.658427904
+    },
+    {
+      "path": "eager",
+      "batch": 32,
+      "chunk_steps": 10,
+      "drive": "sugar GRNs 100 Hz",
+      "ms_per_step": 1.7281478499935474,
+      "realtime_per_brain": 0.05786541932761909,
+      "realtime_aggregate": 1.851693418483811,
+      "spikes_per_bio_s_per_brain": 10186.875,
+      "peak_vram_gb": 0.861614592
+    }
+  ],
+  "meta": {
+    "timestamp_utc": "2026-09-20T19:26:26+00:00",
+    "git_commit": "8770d17720ab6eb8ec27fea32cd634c6f01be9e7",
+    "git_dirty": true,
+    "python": "3.12.12",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "torch": "2.14.0+cu130",
+    "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+    "cuda": "13.0"
+  }
+}
