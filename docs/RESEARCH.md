@@ -93,7 +93,44 @@ Source: `results/benchmark.json`.
 ## Phase 1 — Does looming reach the Giant Fiber?
 
 <!-- BEGIN:looming_gf -->
-not yet measured
+Protocol: r/v ∈ {10, 20, 40, 80} ms, 10° → 63°, 20 trials each, all 104 LC4 and 210 LPLC2 neurons driven (both sides), connectome flywire783, dt 0.1 ms.
+
+| G (Hz) | P(GF spike) overall | median θ at first spike (deg) | P(spike) per r/v = 10 / 20 / 40 / 80 ms |
+|---:|---:|---:|---|
+| 2 | 0.40 | 49.4 | 0.05 / 0.30 / 0.40 / 0.85 |
+| 3 | 0.70 | 40.3 | 0.35 / 0.60 / 0.90 / 0.95 |
+| 5 | 0.94 | 29.3 | 0.80 / 0.95 / 1.00 / 1.00 |
+| 7 | 0.99 | 26.3 | 0.95 / 1.00 / 1.00 / 1.00 |
+| 10 | 1.00 | 18.7 | 1.00 / 1.00 / 1.00 / 1.00 |
+| 15 | 1.00 | 15.6 | 1.00 / 1.00 / 1.00 / 1.00 |
+| 20 | 1.00 | 12.9 | 1.00 / 1.00 / 1.00 / 1.00 |
+| 30 | 1.00 | 11.9 | 1.00 / 1.00 / 1.00 / 1.00 |
+| 50 | 1.00 | 11.4 | 1.00 / 1.00 / 1.00 / 1.00 |
+| 75 | 1.00 | 11.1 | 1.00 / 1.00 / 1.00 / 1.00 |
+| 100 | 1.00 | 10.8 | 1.00 / 1.00 / 1.00 / 1.00 |
+| 150 | 1.00 | 10.6 | 1.00 / 1.00 / 1.00 / 1.00 |
+| 200 | 1.00 | 10.6 | 1.00 / 1.00 / 1.00 / 1.00 |
+
+**Calibration (calibrated): G\* = 3 Hz** — median angular size at the first GF spike 40.3° (target 42°), P(spike) = 0.70. This value is frozen as `TRANSDUCER_VERSION = 1` before any game is played.
+
+At G\*:
+
+| r/v (ms) | P(spike) | GF spikes / trial | first spike: ms after onset | ms before collision | θ at first spike, median [IQR] |
+|---:|---:|---:|---:|---:|---|
+| 10 | 0.30 | 0.3 | 117 | -2 | 63.0° [63.0, 63.0] |
+| 20 | 0.45 | 0.5 | 202 | 27 | 63.0° [58.7, 63.0] |
+| 40 | 0.95 | 1.1 | 348 | 109 | 40.2° [35.7, 55.4] |
+| 80 | 1.00 | 2.2 | 646 | 269 | 33.1° [28.4, 35.0] |
+
+- **Which input matters:** LC4 only → P(spike) 0.00; LPLC2 only → 0.66; both → 0.68.
+- **Wrong cell types (same drive into LC6 + LPLC1):** P(GF spike) = 0.05.
+- **Specificity of the readout:** of 1,299 descending neurons, 18 fire at all under this drive; the two GFs rank 6 and 1 by spike probability (P = 0.17, 0.68).
+- **Size-threshold behaviour (GF spiking disabled):** angular size at the peak of the GF membrane potential: 63° (r/v 10 ms), 63° (r/v 20 ms), 47° (r/v 40 ms), 44° (r/v 80 ms). In real flies the GF response peaks at a roughly constant angular size across r/v (Ache et al. 2019).
+- **Sensitivity to our choice σ = 15°:** median size at first spike 45.6° (σ = 10°) and 19.3° (σ = 25°).
+
+![looming → GF](figures/looming_gf.png)
+
+Source: `results/looming_gf.json`.
 <!-- END:looming_gf -->
 
 ## Phase 1 — How does the naive fly play?

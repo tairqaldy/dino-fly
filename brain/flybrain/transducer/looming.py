@@ -41,7 +41,7 @@ class LoomingParams:
 # Frozen after the calibration in experiments/looming_gf.py (results/looming_gf.json → "calibration").
 # tests/test_looming.py asserts that this constant matches the committed calibration result.
 TRANSDUCER_VERSION = 1
-FROZEN = LoomingParams(version=TRANSDUCER_VERSION, gain_hz=float("nan"))
+FROZEN = LoomingParams(version=TRANSDUCER_VERSION, gain_hz=3.0)
 
 
 def looming_theta_deg(t_to_collision_ms: np.ndarray, rv_ms: float) -> np.ndarray:
