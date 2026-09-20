@@ -186,7 +186,28 @@ Source: `results/naive_play.json` (per-game records incl. action logs are cached
 the real wiring. Does it, in this model?
 
 <!-- BEGIN:mbon_influence -->
-not yet measured
+There are **0 direct MBON → GF synapses** in the connectome, so any influence is polysynaptic. Protocol: looming r/v = 40 ms through the frozen transducer (G = 3 Hz), 40 trials; each MBON type driven at 100 Hz. Baseline P(GF spike) = 0.87; a change is called real only outside ±0.20 (spread across noise seeds + 2 s.e.).
+
+**10 of 35 MBON types** move the GF response outside the noise band; 0 can make the GF fire on their own.
+
+| MBON type | neurons | predicted transmitter | ΔP(GF spike) with looming | P(GF spike) alone |
+|---|---:|---|---:|---:|
+| MBON12 | 4 | acetylcholine | -0.70 | 0.00 |
+| MBON05 | 2 | acetylcholine | -0.68 | 0.00 |
+| MBON18 | 2 | acetylcholine | -0.62 | 0.00 |
+| MBON14 | 4 | acetylcholine | -0.53 | 0.00 |
+| MBON35 | 2 | acetylcholine | -0.48 | 0.00 |
+| MBON16 | 2 | acetylcholine | -0.43 | 0.00 |
+| MBON20 | 2 | gaba | -0.43 | 0.00 |
+| MBON13 | 2 | acetylcholine | -0.40 | 0.00 |
+| MBON28 | 2 | acetylcholine | -0.38 | 0.00 |
+| MBON26 | 2 | acetylcholine | -0.35 | 0.00 |
+
+(ten largest effects shown; all 35 types are in the JSON)
+
+![MBON → GF influence](figures/mbon_influence.png)
+
+Source: `results/mbon_influence.json`.
 <!-- END:mbon_influence -->
 
 ## Phase 4 — Does the fly learn?

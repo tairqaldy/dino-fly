@@ -43,7 +43,8 @@ class KcMbonPlasticity:
                  params: PlasticityParams | None = None, frame_ms: float = 10.0) -> None:
         self.params = params or PlasticityParams()
         self.net, self.dev, self.dtype = net, net.device, net.dtype
-        self.kc, self.mbon, self.dan = (np.asarray(x, dtype=np.int64) for x in (kc, mbon, dan))
+        # sorted, because positions are looked up with searchsorted (PAM + PPL1 arrive concatenated, i.e. unsorted)
+        self.kc, self.mbon, self.dan = (np.sort(np.asarray(x, dtype=np.int64)) for x in (kc, mbon, dan))
         mask = conn.edge_mask(pre_idx=self.kc, post_idx=self.mbon)
         self.edge_mask = mask
         self.gains = net.set_plastic(mask)

@@ -432,7 +432,7 @@ def plot(result: dict | None) -> None:
         if fam in result["shuffle_families"]:
             ys = result["shuffle_families"][fam]["cleared_mean_per_realisation"]
             ax.scatter(np.full(len(ys), len(names) - 0.5 + (0.0 if fam == "shuffle_global" else 0.25)), ys, marker=marker, color=C_BAD, s=18, label=fam.replace("_", " "))
-    ax.set_xticks(range(len(names)), names, fontsize=7)
+    ax.set_xticks(range(len(names)), [n.replace("\n", " ") for n in names], fontsize=7, rotation=28, ha="right")
     ax.set(ylabel="obstacles cleared per game (mean, 95% CI)", title="C  attribution ladder", yscale="symlog")
     ax.legend(fontsize=7)
 

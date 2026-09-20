@@ -74,4 +74,46 @@ All inputs to the two GFs together: 862 presynaptic neurons, 4,752 excitatory an
 | `MN9_630` | 630 | 2 | Shiu et al., Nature 634:210-219 (2024), doi:10.1038/s41586-024-07763-9; example.ipynb / figures.ipynb (MIT) | Readout of the published experiment: (published MN9, its bilateral partner). |
 | `MN9_783` | 783 | 2 | Shiu et al., Nature 634:210-219 (2024), doi:10.1038/s41586-024-07763-9; example.ipynb / figures.ipynb (MIT); partner ID in 783 cross-checked in the annotation table (motor / ingestion_motor_neuron / CB0701, nerve PhN) | Same two motor neurons in materialization 783 (the partner's root ID changed). |
 
+## MBON → Giant Fiber influence map
+
+Measured by `experiments/mbon_influence.py`: each MBON type driven at 100 Hz during a standard looming stimulus (r/v = 40 ms, frozen transducer). Baseline P(GF spike) = 0.87; changes inside ±0.20 are indistinguishable from noise. There is no direct MBON → GF synapse; every effect is polysynaptic.
+
+| MBON type | neurons | predicted transmitter | ΔP(GF spike) | outside noise band |
+|---|---:|---|---:|---|
+| MBON12 | 4 | acetylcholine | -0.70 | yes |
+| MBON05 | 2 | acetylcholine | -0.68 | yes |
+| MBON18 | 2 | acetylcholine | -0.62 | yes |
+| MBON14 | 4 | acetylcholine | -0.53 | yes |
+| MBON35 | 2 | acetylcholine | -0.48 | yes |
+| MBON16 | 2 | acetylcholine | -0.43 | yes |
+| MBON20 | 2 | gaba | -0.43 | yes |
+| MBON13 | 2 | acetylcholine | -0.40 | yes |
+| MBON28 | 2 | acetylcholine | -0.38 | yes |
+| MBON26 | 2 | acetylcholine | -0.35 | yes |
+| MBON33 | 2 | acetylcholine | -0.18 |  |
+| MBON17 | 2 | acetylcholine | -0.08 |  |
+| MBON21 | 2 | acetylcholine | -0.08 |  |
+| MBON15 | 4 | acetylcholine | -0.05 |  |
+| MBON23 | 2 | acetylcholine | -0.05 |  |
+| MBON17-like | 2 | acetylcholine | -0.03 |  |
+| MBON32 | 2 | gaba | -0.03 |  |
+| MBON01 | 2 | glutamate | +0.00 |  |
+| MBON02 | 2 | gaba | +0.00 |  |
+| MBON03 | 2 | glutamate | +0.00 |  |
+| MBON04 | 2 | glutamate | +0.00 |  |
+| MBON06 | 2 | glutamate | +0.00 |  |
+| MBON07 | 4 | glutamate | +0.00 |  |
+| MBON09 | 4 | gaba | +0.00 |  |
+| MBON10 | 9 | gaba | +0.00 |  |
+| MBON11 | 2 | gaba | +0.00 |  |
+| MBON15-like | 5 | acetylcholine | +0.00 |  |
+| MBON19 | 4 | acetylcholine | +0.00 |  |
+| MBON22 | 2 | acetylcholine | +0.00 |  |
+| MBON24 | 2 | acetylcholine | +0.00 |  |
+| MBON25,MBON34 | 6 | glutamate | +0.00 |  |
+| MBON29 | 2 | acetylcholine | +0.00 |  |
+| MBON30 | 2 | glutamate | +0.00 |  |
+| MBON31 | 2 | gaba | +0.00 |  |
+| MBON27 | 2 | acetylcholine | +0.02 |  |
+
 Published MN9 IDs (783): `720575940660219265`, `720575940618238523`.

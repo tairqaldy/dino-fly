@@ -1,6 +1,6 @@
 # Architecture
 
-This document describes what exists today (Phases 0–1) and the intended shape of later phases. Later-phase
+This document describes what exists today (Phases 0–6 as code; see docs/PROGRESS.md for what is measured, deployed or still untested). Not-yet-built
 components are marked *(planned)* and are not in the repository yet.
 
 ## Components
@@ -18,9 +18,9 @@ flowchart LR
   api["apps/api (planned)\nRailway: REST + WS hub, Postgres, R2"]
   web["apps/web (planned)\nCloudflare Pages"]
   fw["firmware (planned)\nESP32 display, pose camera"]
-  laptop -. outbound WebSocket (planned) .-> api
-  web <-. planned .-> api
-  fw <-. planned .-> laptop
+  laptop -. outbound WebSocket .-> api
+  web <--> api
+  fw <--> laptop
 ```
 
 ## The closed loop (Phase 1)

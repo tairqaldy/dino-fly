@@ -1,0 +1,604 @@
+{
+  "experiment": "mbon_influence",
+  "protocol": {
+    "rv_ms": 40.0,
+    "n_trials": 40,
+    "mbon_rate_hz": 100.0,
+    "transducer_gain_hz": 3.0,
+    "connectome": "flywire783",
+    "direct_mbon_to_gf_synapses": 0
+  },
+  "baselines": [
+    {
+      "p_spike": 0.925,
+      "gf_spikes_per_trial": 1.25,
+      "first_spike_ms_after_onset_median": 342.5
+    },
+    {
+      "p_spike": 0.9,
+      "gf_spikes_per_trial": 1.075,
+      "first_spike_ms_after_onset_median": 350.05
+    },
+    {
+      "p_spike": 0.775,
+      "gf_spikes_per_trial": 1.025,
+      "first_spike_ms_after_onset_median": 356.90000000000003
+    }
+  ],
+  "baseline_p_spike": 0.8666666666666667,
+  "noise_band_delta_p": 0.19916343664398067,
+  "mbon_types": [
+    {
+      "cell_type": "MBON01",
+      "n_neurons": 2,
+      "top_nt": "glutamate",
+      "with_looming": {
+        "p_spike": 0.925,
+        "gf_spikes_per_trial": 1.25,
+        "first_spike_ms_after_onset_median": 342.5
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": 0.0
+    },
+    {
+      "cell_type": "MBON02",
+      "n_neurons": 2,
+      "top_nt": "gaba",
+      "with_looming": {
+        "p_spike": 0.925,
+        "gf_spikes_per_trial": 1.25,
+        "first_spike_ms_after_onset_median": 342.5
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": 0.0
+    },
+    {
+      "cell_type": "MBON03",
+      "n_neurons": 2,
+      "top_nt": "glutamate",
+      "with_looming": {
+        "p_spike": 0.925,
+        "gf_spikes_per_trial": 1.25,
+        "first_spike_ms_after_onset_median": 342.5
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": 0.0
+    },
+    {
+      "cell_type": "MBON04",
+      "n_neurons": 2,
+      "top_nt": "glutamate",
+      "with_looming": {
+        "p_spike": 0.925,
+        "gf_spikes_per_trial": 1.25,
+        "first_spike_ms_after_onset_median": 342.5
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": 0.0
+    },
+    {
+      "cell_type": "MBON05",
+      "n_neurons": 2,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.25,
+        "gf_spikes_per_trial": 0.475,
+        "first_spike_ms_after_onset_median": 381.0
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": -0.675
+    },
+    {
+      "cell_type": "MBON06",
+      "n_neurons": 2,
+      "top_nt": "glutamate",
+      "with_looming": {
+        "p_spike": 0.925,
+        "gf_spikes_per_trial": 1.25,
+        "first_spike_ms_after_onset_median": 342.5
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": 0.0
+    },
+    {
+      "cell_type": "MBON07",
+      "n_neurons": 4,
+      "top_nt": "glutamate",
+      "with_looming": {
+        "p_spike": 0.925,
+        "gf_spikes_per_trial": 1.25,
+        "first_spike_ms_after_onset_median": 342.5
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": 0.0
+    },
+    {
+      "cell_type": "MBON09",
+      "n_neurons": 4,
+      "top_nt": "gaba",
+      "with_looming": {
+        "p_spike": 0.925,
+        "gf_spikes_per_trial": 1.25,
+        "first_spike_ms_after_onset_median": 342.5
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": 0.0
+    },
+    {
+      "cell_type": "MBON10",
+      "n_neurons": 9,
+      "top_nt": "gaba",
+      "with_looming": {
+        "p_spike": 0.925,
+        "gf_spikes_per_trial": 1.25,
+        "first_spike_ms_after_onset_median": 342.5
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": 0.0
+    },
+    {
+      "cell_type": "MBON11",
+      "n_neurons": 2,
+      "top_nt": "gaba",
+      "with_looming": {
+        "p_spike": 0.925,
+        "gf_spikes_per_trial": 1.25,
+        "first_spike_ms_after_onset_median": 342.5
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": 0.0
+    },
+    {
+      "cell_type": "MBON12",
+      "n_neurons": 4,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.225,
+        "gf_spikes_per_trial": 0.3,
+        "first_spike_ms_after_onset_median": 384.0
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": -0.7000000000000001
+    },
+    {
+      "cell_type": "MBON13",
+      "n_neurons": 2,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.525,
+        "gf_spikes_per_trial": 0.825,
+        "first_spike_ms_after_onset_median": 348.70000000000005
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": -0.4
+    },
+    {
+      "cell_type": "MBON14",
+      "n_neurons": 4,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.4,
+        "gf_spikes_per_trial": 0.75,
+        "first_spike_ms_after_onset_median": 356.75
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": -0.525
+    },
+    {
+      "cell_type": "MBON15",
+      "n_neurons": 4,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.875,
+        "gf_spikes_per_trial": 1.35,
+        "first_spike_ms_after_onset_median": 341.5
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": -0.050000000000000044
+    },
+    {
+      "cell_type": "MBON15-like",
+      "n_neurons": 5,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.925,
+        "gf_spikes_per_trial": 1.25,
+        "first_spike_ms_after_onset_median": 342.70000000000005
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": 0.0
+    },
+    {
+      "cell_type": "MBON16",
+      "n_neurons": 2,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.5,
+        "gf_spikes_per_trial": 0.675,
+        "first_spike_ms_after_onset_median": 341.5
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": -0.42500000000000004
+    },
+    {
+      "cell_type": "MBON17",
+      "n_neurons": 2,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.85,
+        "gf_spikes_per_trial": 1.325,
+        "first_spike_ms_after_onset_median": 350.20000000000005
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": -0.07500000000000007
+    },
+    {
+      "cell_type": "MBON17-like",
+      "n_neurons": 2,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.9,
+        "gf_spikes_per_trial": 1.5,
+        "first_spike_ms_after_onset_median": 342.0
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": -0.025000000000000022
+    },
+    {
+      "cell_type": "MBON18",
+      "n_neurons": 2,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.3,
+        "gf_spikes_per_trial": 0.45,
+        "first_spike_ms_after_onset_median": 371.3
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": -0.625
+    },
+    {
+      "cell_type": "MBON19",
+      "n_neurons": 4,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.925,
+        "gf_spikes_per_trial": 1.275,
+        "first_spike_ms_after_onset_median": 342.5
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": 0.0
+    },
+    {
+      "cell_type": "MBON20",
+      "n_neurons": 2,
+      "top_nt": "gaba",
+      "with_looming": {
+        "p_spike": 0.5,
+        "gf_spikes_per_trial": 0.95,
+        "first_spike_ms_after_onset_median": 380.3
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": -0.42500000000000004
+    },
+    {
+      "cell_type": "MBON21",
+      "n_neurons": 2,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.85,
+        "gf_spikes_per_trial": 1.225,
+        "first_spike_ms_after_onset_median": 351.85
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": -0.07500000000000007
+    },
+    {
+      "cell_type": "MBON22",
+      "n_neurons": 2,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.925,
+        "gf_spikes_per_trial": 1.275,
+        "first_spike_ms_after_onset_median": 341.90000000000003
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": 0.0
+    },
+    {
+      "cell_type": "MBON23",
+      "n_neurons": 2,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.875,
+        "gf_spikes_per_trial": 1.275,
+        "first_spike_ms_after_onset_median": 348.70000000000005
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": -0.050000000000000044
+    },
+    {
+      "cell_type": "MBON24",
+      "n_neurons": 2,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.925,
+        "gf_spikes_per_trial": 1.25,
+        "first_spike_ms_after_onset_median": 342.5
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": 0.0
+    },
+    {
+      "cell_type": "MBON25,MBON34",
+      "n_neurons": 6,
+      "top_nt": "glutamate",
+      "with_looming": {
+        "p_spike": 0.925,
+        "gf_spikes_per_trial": 1.25,
+        "first_spike_ms_after_onset_median": 342.5
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": 0.0
+    },
+    {
+      "cell_type": "MBON26",
+      "n_neurons": 2,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.575,
+        "gf_spikes_per_trial": 1.05,
+        "first_spike_ms_after_onset_median": 339.90000000000003
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": -0.3500000000000001
+    },
+    {
+      "cell_type": "MBON27",
+      "n_neurons": 2,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.95,
+        "gf_spikes_per_trial": 1.7,
+        "first_spike_ms_after_onset_median": 350.05
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": 0.02499999999999991
+    },
+    {
+      "cell_type": "MBON28",
+      "n_neurons": 2,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.55,
+        "gf_spikes_per_trial": 1.2,
+        "first_spike_ms_after_onset_median": 345.20000000000005
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": -0.375
+    },
+    {
+      "cell_type": "MBON29",
+      "n_neurons": 2,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.925,
+        "gf_spikes_per_trial": 1.275,
+        "first_spike_ms_after_onset_median": 342.6
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": 0.0
+    },
+    {
+      "cell_type": "MBON30",
+      "n_neurons": 2,
+      "top_nt": "glutamate",
+      "with_looming": {
+        "p_spike": 0.925,
+        "gf_spikes_per_trial": 1.25,
+        "first_spike_ms_after_onset_median": 342.5
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": 0.0
+    },
+    {
+      "cell_type": "MBON31",
+      "n_neurons": 2,
+      "top_nt": "gaba",
+      "with_looming": {
+        "p_spike": 0.925,
+        "gf_spikes_per_trial": 1.25,
+        "first_spike_ms_after_onset_median": 342.5
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": 0.0
+    },
+    {
+      "cell_type": "MBON32",
+      "n_neurons": 2,
+      "top_nt": "gaba",
+      "with_looming": {
+        "p_spike": 0.9,
+        "gf_spikes_per_trial": 1.175,
+        "first_spike_ms_after_onset_median": 346.15000000000003
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": -0.025000000000000022
+    },
+    {
+      "cell_type": "MBON33",
+      "n_neurons": 2,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.75,
+        "gf_spikes_per_trial": 1.8,
+        "first_spike_ms_after_onset_median": 347.65000000000003
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": -0.17500000000000004
+    },
+    {
+      "cell_type": "MBON35",
+      "n_neurons": 2,
+      "top_nt": "acetylcholine",
+      "with_looming": {
+        "p_spike": 0.45,
+        "gf_spikes_per_trial": 0.725,
+        "first_spike_ms_after_onset_median": 358.70000000000005
+      },
+      "alone": {
+        "p_spike": 0.0,
+        "gf_spikes_per_trial": 0.0,
+        "first_spike_ms_after_onset_median": null
+      },
+      "delta_p_spike": -0.47500000000000003
+    }
+  ],
+  "n_types_outside_noise_band": 10,
+  "n_types_driving_gf_alone": 0,
+  "meta": {
+    "timestamp_utc": "2026-09-20T20:50:16+00:00",
+    "git_commit": "b9913678357b06fe264869aa0f22de7885945005",
+    "git_dirty": false,
+    "python": "3.12.12",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "torch": "2.14.0+cu130",
+    "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+    "cuda": "13.0"
+  }
+}

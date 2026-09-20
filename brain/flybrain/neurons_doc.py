@@ -138,6 +138,24 @@ def render(lock: dict) -> str:
     ]
     for p in neurons.PUBLISHED:
         out.append(f"| `{p.name}` | {p.materialization} | {len(p.ids)} | {p.citation} | {p.rationale} |")
+    influence = repo_root() / "brain" / "experiments" / "results" / "mbon_influence.json"
+    if influence.exists():
+        r = json.loads(influence.read_text(encoding="utf-8"))
+        out += [
+            "",
+            "## MBON → Giant Fiber influence map",
+            "",
+            "Measured by `experiments/mbon_influence.py`: each MBON type driven at "
+            f"{r['protocol']['mbon_rate_hz']:.0f} Hz during a standard looming stimulus (r/v = {r['protocol']['rv_ms']:.0f} ms, "
+            f"frozen transducer). Baseline P(GF spike) = {r['baseline_p_spike']:.2f}; changes inside ±{r['noise_band_delta_p']:.2f} "
+            "are indistinguishable from noise. There is no direct MBON → GF synapse; every effect is polysynaptic.",
+            "",
+            "| MBON type | neurons | predicted transmitter | ΔP(GF spike) | outside noise band |",
+            "|---|---:|---|---:|---|",
+        ]
+        for v in sorted(r["mbon_types"], key=lambda x: x["delta_p_spike"]):
+            real = "yes" if abs(v["delta_p_spike"]) > r["noise_band_delta_p"] else ""
+            out.append(f"| {v['cell_type']} | {v['n_neurons']} | {v['top_nt']} | {v['delta_p_spike']:+.2f} | {real} |")
     out += ["", "Published MN9 IDs (783): " + ", ".join(f"`{i}`" for i in neurons.MN9_783.ids) + ".", ""]
     return "\n".join(out)
 
