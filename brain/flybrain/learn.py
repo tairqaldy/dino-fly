@@ -22,7 +22,6 @@ from flybrain.plasticity import KcMbonPlasticity, PlasticityParams
 from flybrain.transducer.context import N_CONTEXTS, ContextParams, context_index, context_rates
 from flybrain.transducer.dopamine import DopamineChannel, DopamineParams, timing_magnitude
 
-
 KC_VOLLEY_SPIKES_PER_FRAME = 300  # the context drive alone produces ≈ 80 Kenyon-cell spikes per 10-ms frame
 
 
