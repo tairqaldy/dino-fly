@@ -10,7 +10,11 @@ Python ints / int64 / strings, never floats or JSON numbers. IDs differ between 
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
+from pathlib import Path
+
+import numpy as np
 
 
 @dataclass(frozen=True)
@@ -84,3 +88,148 @@ MN9_783 = PublishedIds(
 )
 
 PUBLISHED: tuple[PublishedIds, ...] = (SUGAR_GRN_630, SUGAR_GRN_783, MN9_630, MN9_783)
+
+
+# ------------------------------------------------------------------------------ annotation-driven sets
+ANNOTATION_SOURCE = (
+    "flyconnectome/flywire_annotations v3.1.0 (commit 8587524c), Supplemental_file1_neuron_annotations.tsv; "
+    "Schlegel et al., Nature 2024, doi:10.1038/s41586-024-07686-5"
+)
+
+
+@dataclass(frozen=True)
+class NeuronSet:
+    """A set of neurons defined by a pandas query on the FlyWire annotation table (materialization 783)."""
+
+    name: str
+    query: str
+    expected_count: int
+    role: str  # "sensory drive" | "motor readout" | "candidate" | "inventory"
+    citation: str
+    rationale: str
+
+
+_LOOMING = (
+    "Klapoetke et al., Nature 551:237 (2017); von Reyn et al., Neuron 94:1190 (2017); "
+    "Ache et al., Curr Biol 29:1073 (2019)"
+)
+_MB = "Li et al., eLife 9:e62576 (2020)"
+_DN_CANDIDATE = "Descending neuron in the looming/takeoff neighbourhood of the GF; alternative readout candidate."
+
+SETS: tuple[NeuronSet, ...] = (
+    NeuronSet(
+        "LPLC2",
+        "cell_type == 'LPLC2'",
+        210,
+        "sensory drive",
+        _LOOMING,
+        "Looming-selective visual projection neurons (radial-motion opponency); encode the angular SIZE of an "
+        "approaching object and synapse directly onto the Giant Fiber. Driven by the looming transducer.",
+    ),
+    NeuronSet(
+        "LC4",
+        "cell_type == 'LC4'",
+        104,
+        "sensory drive",
+        _LOOMING,
+        "Visual projection neurons encoding the angular VELOCITY of a looming object; direct input to the Giant "
+        "Fiber. Driven by the looming transducer.",
+    ),
+    NeuronSet(
+        "GF",
+        "cell_type == 'DNp01'",
+        2,
+        "motor readout",
+        "von Reyn et al., Nat Neurosci 17:962 (2014); annotated hemibrain_type 'Giant Fiber'",
+        "Giant Fiber descending neurons (DNp01), one per side. A single GF spike triggers the short-mode escape "
+        "takeoff; in dino-fly a GF spike is the JUMP command. The table's neurotransmitter prediction for the GF is "
+        "low-confidence and differs between sides (ACh 0.32 / Glu 0.27); we only read its spikes.",
+    ),
+    NeuronSet(
+        "LPLC1",
+        "cell_type == 'LPLC1'",
+        140,
+        "candidate",
+        _LOOMING,
+        "Looming-responsive VPN without direct GF input; specificity control (same drive, wrong cell type).",
+    ),
+    NeuronSet(
+        "LC6",
+        "cell_type == 'LC6'",
+        125,
+        "candidate",
+        "Wu et al., eLife 5:e21022 (2016)",
+        "Looming-responsive VPN linked to takeoff when activated; specificity control and alternative pathway.",
+    ),
+    NeuronSet("DNp02", "cell_type == 'DNp02'", 2, "candidate", _LOOMING, _DN_CANDIDATE),
+    NeuronSet("DNp04", "cell_type == 'DNp04'", 2, "candidate", _LOOMING, _DN_CANDIDATE),
+    NeuronSet("DNp06", "cell_type == 'DNp06'", 2, "candidate", _LOOMING, _DN_CANDIDATE),
+    NeuronSet("DNp11", "cell_type == 'DNp11'", 2, "candidate", _LOOMING, _DN_CANDIDATE),
+    NeuronSet(
+        "DN_ALL",
+        "super_class == 'descending'",
+        1303,
+        "inventory",
+        ANNOTATION_SOURCE,
+        "All annotated descending neurons: used to rank the GF's response to looming drive against every other "
+        "possible motor readout (specificity analysis), never as a learned readout.",
+    ),
+    NeuronSet(
+        "KC",
+        "cell_class == 'Kenyon_Cell'",
+        5177,
+        "inventory",
+        _MB,
+        "Kenyon cells of the mushroom body (Phase 4: presynaptic side of the only plastic synapses).",
+    ),
+    NeuronSet(
+        "MBON",
+        "cell_type.str.startswith('MBON', na=False)",
+        96,
+        "inventory",
+        _MB,
+        "Mushroom body output neurons (Phase 4: postsynaptic side of the plastic KC→MBON synapses).",
+    ),
+    NeuronSet(
+        "PAM",
+        "cell_type.str.startswith('PAM', na=False)",
+        307,
+        "inventory",
+        _MB,
+        "PAM-cluster dopaminergic neurons (reward teaching signal, Phase 4).",
+    ),
+    NeuronSet(
+        "PPL1",
+        "cell_type.str.startswith('PPL1', na=False)",
+        16,
+        "inventory",
+        _MB,
+        "PPL1-cluster dopaminergic neurons (punishment teaching signal, Phase 4).",
+    ),
+)
+
+SET_BY_NAME = {s.name: s for s in SETS}
+LOCK_PATH = Path(__file__).with_name("data") / "neuron_sets.lock.json"
+
+
+def resolve_in_table(neuron_set: NeuronSet, annotations) -> np.ndarray:
+    """Root IDs (int64, sorted) matching the set's query in an annotation DataFrame."""
+    sub = annotations.query(neuron_set.query, engine="python")
+    return np.sort(sub["root_id"].astype("int64").to_numpy())
+
+
+def load_lock() -> dict:
+    return json.loads(LOCK_PATH.read_text(encoding="utf-8"))
+
+
+def ids(name: str) -> np.ndarray:
+    """FlyWire-783 root IDs of a set, from the committed lock file (no annotation table needed at run time)."""
+    return np.array([int(i) for i in load_lock()["sets"][name]["ids"]], dtype=np.int64)
+
+
+def indices(conn, name: str) -> np.ndarray:
+    """Neuron indices of a set in `conn`. Synthetic connectomes resolve the same query on their own annotations."""
+    if conn.annotations is not None:
+        return conn.index_of(resolve_in_table(SET_BY_NAME[name], conn.annotations))
+    all_ids = ids(name)
+    return conn.index_of(all_ids[np.isin(all_ids, conn.root_ids)])

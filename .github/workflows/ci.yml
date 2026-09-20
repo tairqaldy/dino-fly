@@ -46,8 +46,9 @@ jobs:
           cache-dependency-glob: brain/uv.lock
       - run: uv sync --extra cpu --locked
       - run: uv run --no-sync ruff check .
-      - run: uv run --no-sync ruff format --check .
       # CPU only: tests marked gpu / data / brian2 are deselected by default (see pyproject.toml).
       - run: uv run --no-sync pytest
       - name: RESEARCH.md tables match the committed results JSONs
         run: uv run --no-sync python -m experiments.report --check
+      - name: NEURONS.md and the neuron-set lock file match neurons.py
+        run: uv run --no-sync flybrain neurons-doc --check
