@@ -4,12 +4,18 @@ from __future__ import annotations
 
 import datetime as _dt
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 
 from flybrain.config import figures_dir, git_commit, git_has_tag, git_is_dirty, results_dir, run_metadata
+
+# Windows consoles / redirected logs default to cp1252; experiments print θ, → and ± freely.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace", line_buffering=True)
 
 
 class _Encoder(json.JSONEncoder):

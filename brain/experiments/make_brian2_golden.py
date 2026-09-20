@@ -225,7 +225,7 @@ def native_rerun(name: str, trials: int, n_steps: int, rate_hz: float) -> int:
         net.run(n_steps * p.dt_ms * b2.ms)
         idx = np.asarray(mon.i)
         rates.append([float(np.sum(idx == m)) / (n_steps * p.dt_ms * 1e-3) for m in mn9_idx])
-        totals.append(int(len(idx)))
+        totals.append(len(idx))
         print(f"[brian2 native] trial {trial}: MN9 {rates[-1]}, {totals[-1]} spikes", flush=True)
     r = np.asarray(rates)
     out = {
