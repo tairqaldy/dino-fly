@@ -1,0 +1,72 @@
+{
+  "_comment": "Pinned download sources. sha256 is recorded on first download (`flybrain download-data --record`) and enforced afterwards. Sizes are bytes. md5 values are the checksums published by the Edmond archive (doi:10.17617/3.CZODIW).",
+  "files": {
+    "flywire783_completeness": {
+      "path": "flywire783/Completeness_783.csv",
+      "size": 3465987,
+      "sha256": "52b0ac6094cd32c546f8d4c341e094376f48f4e791f8db9b166de5dff8199ea4",
+      "urls": [
+        "https://raw.githubusercontent.com/eonsystemspbc/fly-brain/a3db62f9436074e485c0278290c2164ed6150808/data/2025_Completeness_783.csv"
+      ],
+      "note": "FlyWire materialization 783 neuron list as prepared by Shiu et al.; row order defines the neuron index. CRLF line endings."
+    },
+    "flywire783_connectivity": {
+      "path": "flywire783/Connectivity_783.parquet",
+      "size": 100804642,
+      "sha256": "efeb23fb99098e9c390f6869969b2a121a2ee92c833cfc45ecb2c1d8e1af0347",
+      "urls": [
+        "https://raw.githubusercontent.com/eonsystemspbc/fly-brain/a3db62f9436074e485c0278290c2164ed6150808/data/2025_Connectivity_783.parquet",
+        "https://raw.githubusercontent.com/philshiu/Drosophila_brain_model/91bdd1e7dcf193f3e7ca5a8933497fcef63b7960/Connectivity_783.parquet"
+      ],
+      "note": "Byte-identical in both repositories (git blob d386555d1a5f40ebfa1380bcb05b1fab044855fd)."
+    },
+    "flywire630_completeness": {
+      "path": "flywire630/Completeness_630.csv",
+      "size": 3057611,
+      "sha256": "e6b71e17671a9bdb05f55e4bc6774640a1418cb7a05125e0fc994ad40f9bfdfb",
+      "md5": "0dc6b58650bd3cd3a2661773d9228e78",
+      "urls": [
+        "https://raw.githubusercontent.com/philshiu/Drosophila_brain_model/91bdd1e7dcf193f3e7ca5a8933497fcef63b7960/2023_03_23_completeness_630_final.csv",
+        "https://edmond.mpg.de/api/access/datafile/214095"
+      ],
+      "note": "Materialization 630: the connectome all published reference numbers of Shiu et al. 2024 were produced with."
+    },
+    "flywire630_connectivity": {
+      "path": "flywire630/Connectivity_630.parquet",
+      "size": 86630944,
+      "sha256": "94db8c650533bc36ffa3223f2e62325d5648b8d6bd31c3a4e1c804628c7557b3",
+      "md5": "3b42c0fc2cc525bd9784e38c05f9d79d",
+      "urls": [
+        "https://raw.githubusercontent.com/philshiu/Drosophila_brain_model/91bdd1e7dcf193f3e7ca5a8933497fcef63b7960/2023_03_23_connectivity_630_final.parquet",
+        "https://edmond.mpg.de/api/access/datafile/214091"
+      ]
+    },
+    "shiu_example_sugar_200hz": {
+      "path": "shiu2024_example/sugarR.parquet",
+      "size": 948526,
+      "sha256": "83921d50089d966785e402d6c0e3be5ab3eba5beb680410a09c557b0f22dcc28",
+      "urls": [
+        "https://raw.githubusercontent.com/philshiu/Drosophila_brain_model/91bdd1e7dcf193f3e7ca5a8933497fcef63b7960/results/example/sugarR.parquet"
+      ],
+      "note": "Published per-spike output, 21 sugar GRNs at 200 Hz, 30 x 1 s, connectome v630."
+    },
+    "shiu_example_sugar_100hz": {
+      "path": "shiu2024_example/sugarR_100Hz.parquet",
+      "size": 557849,
+      "sha256": "93722ec03c3faa5a85790d77ed16bdd7f1e38a7c847ed0bc3af3dc2e4d0c3d34",
+      "urls": [
+        "https://raw.githubusercontent.com/philshiu/Drosophila_brain_model/91bdd1e7dcf193f3e7ca5a8933497fcef63b7960/results/example/sugarR_100Hz.parquet"
+      ],
+      "note": "Published per-spike output, 21 sugar GRNs at 100 Hz, 30 x 1 s, connectome v630."
+    },
+    "flywire_annotations": {
+      "path": "annotations/Supplemental_file1_neuron_annotations_v3.1.0.tsv",
+      "size": 31718505,
+      "sha256": "9a4f8b2f843196074431ebd7cd883536afa1be86c8a4ce90970441e8be81d1be",
+      "urls": [
+        "https://raw.githubusercontent.com/flyconnectome/flywire_annotations/8587524c1748ce5ef2080822a2fc890fc03bf597/supplemental_files/Supplemental_file1_neuron_annotations.tsv"
+      ],
+      "note": "flywire_annotations v3.1.0 (root_id = materialization 783). No license file in the source repo: download-only, never redistributed."
+    }
+  }
+}
