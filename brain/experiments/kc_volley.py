@@ -144,7 +144,8 @@ def render_report(r: dict) -> str:
     ]
     if n:
         lines.append(f"- In a volley frame a median of **{r['kcs_active_per_volley_frame_median']:.0f} of {pr['n_kc']:,} Kenyon cells** fire and dopaminergic "
-                     f"neurons fire {r['dan_spikes_per_frame_in_volley_median']:.0f} spikes per frame on their own.")
+                     f"neurons fire {r['dan_spikes_per_frame_in_volley_median']:.0f} spikes per frame (the punishment burst itself, 16 PPL1 neurons at "
+                     "100 Hz, accounts for ≈ 16 per frame at most; the rest is driven by the network).")
     lines += [f"- Replaying the first {pr['batch']} seeds in reversed column order: onsets "
               + ("**reappear at the same frame of the same game** — a property of the game state, not of the batched engine."
                  if r["onsets_follow_the_seed_when_columns_are_reversed"] else "**do not reappear identically** — this needs investigation."),

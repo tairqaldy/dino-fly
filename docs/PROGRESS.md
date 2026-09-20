@@ -46,11 +46,30 @@ schema + migrations (verified against a local Postgres), R2/disk blob store. Web
 **Not done:** Railway API deploy fails at build scheduling without a log (image builds and runs locally) — see
 `docs/DEPLOY.md`; Cloudflare Pages/R2/Turnstile need credentials that are not on this machine.
 
-## Phase 4 — Learning · in progress
+## Phase 4 — Learning · measured (2026-09-21), see RESEARCH.md for the verdicts
 
-Plastic KC→MBON path in the engine (identical to the frozen network at gain 1), three-factor rule, dopamine and
-context transducers, generations + held-out evaluation, ablations; MBON → GF influence calibration.
-Results: see `docs/RESEARCH.md` (sections stay "not yet measured" until their JSON exists).
+**Done.** Plastic KC→MBON path in the engine (identical to the frozen network at gain 1), three-factor rule, dopamine
+and context transducers, generations + held-out evaluation with ablations, two hypotheses (H1: real wiring only;
+H2: mushroom-body output sets the looming gain — a documented model assumption), pre-registration tags
+`prereg-phase4-h1` / `-h2`, and five diagnostics that had to come first.
+
+**What the diagnostics found (all in RESEARCH.md, none involves a game score).**
+- MBON → GF influence map: no direct synapse; 10 of 35 MBON types suppress the Giant Fiber, none excites it.
+- Visual context cannot enter where the brief wanted it: all 24 configurations that drive KC-projecting *visual
+  projection neurons* either fire the Giant Fiber themselves or abolish its looming response. Delivered directly to
+  the 388 visual Kenyon cells the context leaves the reflex untouched and makes MBONs fire (mostly MBON27 / 09 / 32 —
+  types without influence on the GF). This deviation from rule 3 is flagged as DECISIONS.md D13.
+- The published model can ignite: a few frames after some crashes roughly a third of all Kenyon cells fire together and
+  keep going. Our batched play loop let finished columns sit in that state and teach — fixed, regression-tested,
+  counted in every result. PAM / PPL1 bursts alone do not ignite it; PPL1 bursts inside a running game do, which is why
+  the shuffled-dopamine control shuffles only the reward (D20).
+- A reward-bookkeeping bug (reward magnitude read from the *next* obstacle) was found and fixed before any held-out
+  learning game.
+- Doubling the looming gain by hand roughly doubles the naive DEV score (88.7 → 174–190), so H2 has room to show an
+  effect if the mushroom body moves the gain the right way.
+
+**Learning results.** Rendered into RESEARCH.md from `results/learning.json` (H1) and `results/learning_h2.json` (H2)
+as soon as each run finishes; anything still missing there reads "not yet measured".
 
 ## Phase 5 — Crowd teaching · implemented, not yet measured
 
@@ -66,8 +85,19 @@ pose camera 757,501 bytes (22.7 %) and 47,296 bytes. Nothing has been flashed or
 
 ## Next
 
-1. Tair: answer the open decisions (D1, D3, D4, D8) and unblock the Railway deploy.
-2. Read Phase 4 results critically; if KC→MBON plasticity cannot reach the escape circuit, test the second hypothesis
-   from the brief (dopamine-gated sensory gain, as a documented model assumption) — not started.
-3. Flash the firmware; wire pose events into the Play page; collect human runs → Phase 5 ablation.
-4. Phase 7/8: ducking via a calibrated descending neuron, pixel-based motion front end, MaleCNS loader, v1.0 write-up.
+1. Tair: answer the open decisions — D13 (context delivered at the Kenyon cells: accept the deviation?), D17 (is this
+   the H2 you meant?), D8 (which `BIO_MS_PER_FRAME` is the headline), D1, D3, D4 — and unblock the Railway deploy (D15).
+2. Flash the firmware (it compiles; pins are untested), try body control with a real camera, collect human runs with
+   the local API → Phase 5 ablation (first check the replay's mid-game punishment for Kenyon-cell volleys).
+3. The honest fix for Phase 4's context problem is a pixel-based motion front end (Phase 7): let the fly *see* the
+   game through its own optic lobes instead of hand-written context codes.
+4. Understand the post-crash Kenyon-cell volleys (which loop sustains them; does APL inhibition fail?) — a finding
+   about the published model worth a short note of its own.
+5. Phase 7/8: ducking via a calibrated descending neuron, MaleCNS loader, v1.0 write-up.
+
+## How to try everything locally
+
+The commands are in [`DEPLOY.md` § 1](DEPLOY.md) (Postgres in Docker → API → `flybrain worker` → web dev server; use Git
+Bash or adapt `export` to PowerShell's `$env:`). Optional body control:
+`uv run --no-sync --with mediapipe --with opencv-python python brain/pose/pose_input.py --source 0`, then tick
+"play with your body" on the Play page.

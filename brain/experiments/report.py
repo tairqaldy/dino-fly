@@ -176,6 +176,7 @@ RENDERERS: dict[str, Callable[[], str]] = {
     "mbon_influence": _later("mbon_influence"),
     "mb_drive": _later("mb_drive"),
     "mb_drive_kc": _later("mb_drive_kc", "mb_drive"),
+    "mb_wiring": _later("mb_wiring"),
     "da_burst": _later("da_burst"),
     "kc_volley": _later("kc_volley"),
     "learning": _later("learning"),

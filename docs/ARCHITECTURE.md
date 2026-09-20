@@ -66,8 +66,19 @@ covers just the MBONs (weight = frozen synapse count × gain; identical to the f
 frame `flybrain/plasticity.py` updates per-synapse eligibility traces from Kenyon-cell and MBON spike counts and, when
 dopaminergic neurons fire, depresses eligible synapses in proportion to the dopamine each MBON receives
 (DAN→MBON synapse counts as compartment proxy). Reward (obstacle cleared) drives the PAM cluster, punishment (crash)
-the PPL1 cluster; a coarse visual context reaches the Kenyon cells through the 265 visual projection neurons that
-synapse onto them. A generation is a gain vector; evaluation always uses the same 100 held-out seeds with plasticity off.
+the PPL1 cluster. A coarse visual context (one code per obstacle class) is delivered to the 388 visual Kenyon cells —
+one synapse further in than intended, because every drive of the visual projection neurons themselves disturbs the
+escape reflex (`experiments/mb_drive.py`, DECISIONS.md D13). A generation is a gain vector; evaluation always uses the
+same 100 held-out seeds with plasticity off.
+
+Two hypotheses about how the learned synapses reach behaviour share this machinery (`flybrain/learn.py`): **H1** —
+only through the real wiring MBON → … → Giant Fiber; **H2** — a documented model assumption: the low-passed firing of
+avoidance-type vs. approach-type MBONs, relative to a naive brain, shifts the gain of the looming transducer within
+[G/2, 2G]. Neither adds a learned component outside the KC→MBON gains.
+
+The batched play loop silences a brain column as soon as its game is over and never lets idle columns reach the
+learning rule: the published model can fall into self-sustained Kenyon-cell volleys after a crash
+(`experiments/kc_volley.py`).
 
 ## Data
 

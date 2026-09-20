@@ -47,7 +47,8 @@ game state ─► looming transducer ─► LPLC2 / LC4 Poisson drive ─► who
   Python port; `packages/dino-render` — own pixel art; `packages/protocol` — JSON-Schema message protocol.
 - `apps/web` — play vs. the fly, live brain map, leaderboard, research page; `apps/api` — scores validated by
   deterministic replay, leaderboard, ghosts, worker hub (Postgres).
-- `firmware/` — ESP32 stats display with reward/punish buttons, XIAO ESP32S3 pose camera *(written, not yet tested on hardware)*.
+- `firmware/` — ESP32 stats display with reward/punish buttons, XIAO ESP32S3 pose camera *(both compile; not yet
+  tested on hardware)*; `brain/pose/` turns a camera into jump / duck input for the Play page.
 - `docs/` — [ARCHITECTURE](docs/ARCHITECTURE.md) · [RESEARCH](docs/RESEARCH.md) · [NEURONS](docs/NEURONS.md) ·
   [DECISIONS](docs/DECISIONS.md) (incl. open questions and the forking-paths log) · [PROTOCOL](docs/PROTOCOL.md) ·
   [HARDWARE](docs/HARDWARE.md) · [DEPLOY](docs/DEPLOY.md) · [PROGRESS](docs/PROGRESS.md).

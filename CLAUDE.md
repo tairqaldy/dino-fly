@@ -88,3 +88,23 @@ pnpm --filter @dino-fly/dino-core gen-fixtures   # regenerates golden fixtures (
 Windows 11 native (no WSL Ubuntu distro), RTX 5060 Laptop 8 GB (Blackwell → needs CUDA ≥ 12.8 wheels; we use cu130),
 uv-managed CPython 3.12, Node 24 + pnpm 10. No Triton on Windows by default: do not depend on `torch.compile`.
 Long GPU jobs run in the background with resumable per-seed caches under `brain/experiments/cache/` (git-ignored).
+
+- Always `uv run --no-sync …` inside `brain/` (a plain `uv run` re-syncs without the torch extra and uninstalls torch).
+  Experiments: `PYTHONUTF8=1 uv run --no-sync python -u -m experiments.<name>`; logs go to `brain/experiments/logs/`.
+- One GPU experiment at a time. Two concurrent runs halve the speed and overwrite each other's checkpoints — check
+  for a running `experiments.*` process before launching.
+- Firmware builds without installing PlatformIO: `uvx --from platformio pio run -d firmware/<project>`.
+
+## Lessons that cost a night (Phase 4)
+
+- **Check the manipulation before the experiment.** Any new drive into the brain gets a no-game diagnostic first
+  (`experiments/mb_drive.py`, `da_burst.py`, `kc_volley.py`): does it reach its target, does it leave the looming
+  reflex alone, does it make dopaminergic neurons or the Giant Fiber fire by itself? The reflex sits at threshold
+  (G = 3 Hz); almost everything disturbs it.
+- **The published model can ignite.** Dopamine is a fast excitatory transmitter in it and nothing adapts: after some
+  crashes ~1/3 of all Kenyon cells fire in self-sustained volleys. Never leave a brain column running after its game
+  is over, never let idle columns reach the learning rule, never deliver PPL1 bursts inside a running game.
+- **Learning rates come from a synaptic criterion in a pilot, never from a score**; pilots use DEV seeds and TRAIN
+  seeds ≥ 800,000 and never play an evaluation game.
+- Held-out learning runs need their own tag (`prereg-phase4-h1`, `-h2`, …) and a clean tree; commit the pilot JSON
+  first, because it fixes η.

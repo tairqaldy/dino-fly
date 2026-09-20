@@ -8,6 +8,11 @@
 2. Death curriculum. Seeds on which many humans die are over-sampled in the fly's own training games.
 
 Both are ablated against solo training on equal compute in `experiments/crowd_teaching.py`.
+
+Known problem, found in Phase 4 and not yet resolved here: the punishment of (1) is a PPL1 burst *inside a running
+game*, and in this model such bursts ignite self-sustained Kenyon-cell volleys (`experiments/kc_volley.py`, DECISIONS
+D20). Before the replay is used on real human runs, check `learner.spike_totals["kc_volley_column_frames"]`; if volleys
+appear, the punishment has to move (e.g. to the end of the replayed run) — a decision to log, not to make silently.
 """
 
 from __future__ import annotations
@@ -70,6 +75,7 @@ def observational_replay(net, drive, n_lc4: int, n_lplc2: int, gf_watch: np.ndar
         for col in range(b):
             learner.start_game(col)
         longest = max(len(p[2]) for p in prepared)
+        finished: set[int] = set(range(len(batch), b))
         for f in range(longest):
             lc4_rate, lplc2_rate = np.zeros(b), np.zeros(b)
             games, views = [None] * b, [None] * b
@@ -79,12 +85,18 @@ def observational_replay(net, drive, n_lc4: int, n_lplc2: int, gf_watch: np.ndar
                     lc4, lplc2 = population_rates(view.theta_deg, view.theta_dot_deg_s, looming)
                     lc4_rate[col], lplc2_rate[col] = float(lc4), float(lplc2)
                     games[col], views[col] = _Shim(states[f]), view
+                elif col not in finished:
+                    # the run is over: silence its column — an idle brain must neither linger nor teach (play.py does the same)
+                    finished.add(col)
+                    net.reset(columns=np.array([col]))
             drive.set_rates(np.concatenate([np.tile(lc4_rate, (n_lc4, 1)), np.tile(lplc2_rate, (n_lplc2, 1)), learner.extra_rates(games, views, {})], axis=0))
             res = net.run(steps, record=None, watch=watch)
-            learner.frame(res.watch_counts[len(gf_watch) :])
+            seen = np.array(res.watch_counts[len(gf_watch) :])
+            seen[:, sorted(finished)] = 0
+            learner.frame(seen)
             gf = res.watch_counts[: len(gf_watch)].sum(axis=0)
             for col, (good, jumps, states) in enumerate(prepared):
-                if f >= len(states) or gf[col] == 0:
+                if col in finished or gf[col] == 0:
                     continue
                 frame = states[f].frame
                 stats["gf_frames"] += 1

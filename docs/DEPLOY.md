@@ -10,7 +10,7 @@ worker dials out to the API. When the laptop is off the public site keeps workin
 |---|---|---|
 | Web app | **deployed** by GitHub Actions (`.github/workflows/pages.yml`) | <https://tairqaldy.github.io/dino-fly/> |
 | Railway project `dino-fly` | created; **Postgres running**; `api` service created with `WORKER_TOKEN`, `RUN_TOKEN_SECRET`, `DATABASE_URL`, `PORT`, `NODE_ENV` set | <https://railway.com/project/84090b88-674e-4b22-8a63-fb34c0137d6e> |
-| API deploy | **FAILED at "scheduling build" with no build log** (two attempts via `railway up`). The same image builds and runs locally against Postgres. Looks like an account/plan-level refusal rather than a code problem — see "Finish the API deploy" below | intended URL: <https://api-production-dad9.up.railway.app> |
+| API deploy | **FAILED at "scheduling build" with no build log** (three attempts via `railway up`, the last on 2026-09-21 03:48 +05; `railway logs --build` shows nothing more). The same image builds and runs locally against Postgres. Looks like an account/plan-level refusal rather than a code problem — see "Finish the API deploy" below | intended URL: <https://api-production-dad9.up.railway.app> |
 | Cloudflare Pages / R2 / Turnstile / Tunnel | not set up (no Cloudflare credentials on this machine) | steps below |
 | GitHub Pages build variables | `VITE_API_URL`, `VITE_FLY_WS` point at the Railway URL above | `gh variable list` |
 

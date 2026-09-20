@@ -288,9 +288,37 @@ Source: `results/mb_drive_kc.json`.
 <!-- END:mb_drive_kc -->
 
 **Reading.** A Kenyon-cell-level context leaves the reflex untouched and makes MBONs fire — mostly MBON27, MBON09 and
-MBON32, which the influence map above found to have *no* effect on the Giant Fiber. So the prediction for H1, stated
-before the learning experiment ran: the visually driven part of the mushroom body does not talk to the escape
-circuit in this model, and changing its synapses should change nothing.
+MBON32, which the influence map above found to have *no* effect on the Giant Fiber. What the wiring allows in
+principle (connectome only):
+
+<!-- BEGIN:mb_wiring -->
+The 388 visual Kenyon cells make 14,544 synapses onto MBONs. The twelve MBON types that receive most of them:
+
+| MBON type | neurons | predicted transmitter → H2 class | synapses from visual KCs | share | from all KCs | from PAM | from PPL1 | ΔP(GF spike) when driven |
+|---|---:|---|---:|---:|---:|---:|---:|---:|
+| MBON09 | 4 | gaba → approach | 2,249 | 15% | 32,119 | 889 | 4 | +0.00 |
+| MBON05 | 2 | acetylcholine/glutamate → approach/avoidance | 2,155 | 15% | 20,400 | 1,470 | 15 | -0.68 **(outside noise band)** |
+| MBON27 | 2 | acetylcholine → approach | 1,733 | 12% | 2,633 | 231 | 3 | +0.02 |
+| MBON11 | 2 | gaba → approach | 1,208 | 8% | 18,360 | 61 | 954 | +0.00 |
+| MBON07 | 4 | glutamate → avoidance | 1,182 | 8% | 22,762 | 1,556 | 5 | +0.00 |
+| MBON06 | 2 | glutamate → avoidance | 1,094 | 8% | 12,216 | 1,329 | 19 | +0.00 |
+| MBON32 | 2 | gaba → approach | 843 | 6% | 4,738 | 10 | 280 | -0.03 |
+| MBON01 | 2 | glutamate → avoidance | 690 | 5% | 9,022 | 397 | 0 | +0.00 |
+| MBON35 | 2 | acetylcholine → approach | 508 | 3% | 1,875 | 13 | 294 | -0.48 **(outside noise band)** |
+| MBON20 | 2 | gaba → approach | 340 | 2% | 1,869 | 6 | 25 | -0.43 **(outside noise band)** |
+| MBON02 | 2 | gaba/glutamate → approach/avoidance | 311 | 2% | 9,931 | 431 | 0 | +0.00 |
+| MBON19 | 4 | acetylcholine → approach | 310 | 2% | 859 | 0 | 27 | +0.00 |
+
+MBON types that move the Giant Fiber outside the noise band of the influence map receive **24%** of the visual-KC → MBON synapses (MBON05 2,155, MBON35 508, MBON20 340, MBON14 305, MBON12 153, …).
+
+Source: `results/mb_wiring.json` (connectome only; ΔP from `results/mbon_influence.json`).
+<!-- END:mb_wiring -->
+
+So a route exists on paper — visual Kenyon cells → MBON05 / MBON35 / MBON20 → … → Giant Fiber, with PAM dopamine on
+MBON05 — but with the context on, the looming response of the naive fly is unchanged (table above: P(GF spike) 0.89
+with and without context), i.e. those MBONs are not driven hard enough to suppress anything that learning could then
+release. The prediction for H1, stated before the learning experiment ran: changing the visually driven KC→MBON
+synapses should change nothing the Giant Fiber can feel.
 
 ## Phase 4 — Can the model take a dopamine burst?
 
@@ -304,7 +332,7 @@ neurons are wired recurrently with Kenyon cells and MBONs). Measured:
 16 games (13 crashes) with looming, visual context and dopamine bursts, plasticity off. A volley frame has more than 300 Kenyon-cell spikes; with the context alone the median is 76.
 
 - **2 volley onsets in 13 crashes**; 9 volley frames of 8,199 column-frames, 9 of them inside the punishment tail after a crash (onset 9–12 frames after the crash).
-- In a volley frame a median of **1632 of 5,177 Kenyon cells** fire and dopaminergic neurons fire 102 spikes per frame on their own.
+- In a volley frame a median of **1632 of 5,177 Kenyon cells** fire and dopaminergic neurons fire 102 spikes per frame (the punishment burst itself, 16 PPL1 neurons at 100 Hz, accounts for ≈ 16 per frame at most; the rest is driven by the network).
 - Replaying the first 8 seeds in reversed column order: onsets **reappear at the same frame of the same game** — a property of the game state, not of the batched engine.
 
 Source: `results/kc_volley.json`.
@@ -426,7 +454,9 @@ not yet measured
 
 Two mechanisms are implemented (`flybrain/crowd.py`): observational replay of stored human runs with dopamine as
 the only teaching signal, and a curriculum of seeds on which many humans die. Both need validated human runs from
-the public leaderboard.
+the public leaderboard; no synthetic "humans" are substituted. One design problem is already known from Phase 4: the
+replay's punishment is a PPL1 burst inside a running game, which in this model can ignite Kenyon-cell volleys — it
+has to be checked (and probably moved) before the ablation is run on real data.
 
 <!-- BEGIN:crowd_teaching -->
 not yet measured
