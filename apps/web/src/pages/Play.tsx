@@ -1,4 +1,4 @@
-import type { Input } from "@dino-fly/dino-core";
+import { createInitialState, type Input } from "@dino-fly/dino-core";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GameCanvas } from "../components/GameCanvas.js";
 import { api, bundledGhosts, type Ghost, type SubmitResult } from "../lib/api.js";
@@ -6,6 +6,7 @@ import type { FeedSnapshot } from "../lib/feed.js";
 import { FixedStep, RaceSession } from "../lib/race.js";
 
 type Phase = "idle" | "running" | "over";
+const IDLE = createInitialState(0);
 
 export function Play({ feed }: { feed: FeedSnapshot }) {
   const [phase, setPhase] = useState<Phase>("idle");
@@ -101,7 +102,7 @@ export function Play({ feed }: { feed: FeedSnapshot }) {
 
   const getState = useCallback(() => {
     const s = session.current;
-    return s ? { state: s.human, options: { ghost: s.ghost, label: "YOU", ghostLabel: "FLY" } } : null;
+    return s ? { state: s.human, options: { ghost: s.ghost, label: "YOU", ghostLabel: "FLY" } } : { state: IDLE, options: { label: "YOU" } };
   }, []);
 
   return (
