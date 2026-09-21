@@ -29,11 +29,19 @@ export interface FeedSnapshot {
 }
 
 const HISTORY = 360;
+export const RETRY_MIN_MS = 3000;
+export const RETRY_MAX_MS = 60_000;
+
+/** Exponential backoff for reconnects: 3 s, 6 s, 12 s, … capped at one minute. */
+export function nextRetryMs(current: number): number {
+  return Math.min(RETRY_MAX_MS, Math.max(RETRY_MIN_MS, current * 2));
+}
 
 export class FlyFeed {
   private ws: WebSocket | null = null;
   private listeners = new Set<() => void>();
   private timer: ReturnType<typeof setTimeout> | null = null;
+  private retryMs = RETRY_MIN_MS;
   private frameTimes: number[] = [];
   private closed = false;
   snapshot: FeedSnapshot = {
@@ -87,7 +95,10 @@ export class FlyFeed {
       this.retry();
       return;
     }
-    this.ws.onopen = () => this.update({ online: true });
+    this.ws.onopen = () => {
+      this.retryMs = RETRY_MIN_MS;
+      this.update({ online: true });
+    };
     this.ws.onclose = () => {
       this.update({ online: false });
       this.retry();
@@ -96,8 +107,11 @@ export class FlyFeed {
     this.ws.onmessage = (ev) => this.onMessage(String(ev.data));
   }
 
+  /** Reconnect with exponential backoff: the brain is often offline for hours, no need to knock every 3 s. */
   private retry(): void {
-    if (!this.closed) this.timer = setTimeout(() => this.connect(), 3000);
+    if (this.closed) return;
+    this.timer = setTimeout(() => this.connect(), this.retryMs);
+    this.retryMs = nextRetryMs(this.retryMs);
   }
 
   private onMessage(raw: string): void {

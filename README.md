@@ -31,7 +31,18 @@ All numbers: `docs/RESEARCH.md`, rendered from `brain/experiments/results/*.json
 4. **…and the honest part:** a bare threshold on our own hand-written transducer, with no brain at all, scores 281.
    In this phase the brain is a noisy threshold; the wiring is necessary (shuffles fail, and surprisingly the
    *direct* looming→Giant-Fiber synapses alone are not enough — the indirect pathways carry the jump), but it is not
-   yet *adding* skill. Whether the fly's own learning rule can change that is Phase 4 (see the research log).
+   yet *adding* skill.
+5. **The fly's own learning rule does not make it play better — and we know why.** With dopamine-gated KC→MBON
+   plasticity acting only through the real wiring (H1, pre-registered, 100 held-out seeds), the score goes from 88.6
+   to 85.6 after the first generation and then never moves again: later generations — and a control with rewards
+   delivered at random moments — play all 100 held-out games *identically*. On the way there: no direct
+   MBON→Giant-Fiber synapse exists (10 of 35 MBON types can suppress the Giant Fiber, none excites it); every way of
+   feeding visual context into the mushroom body through visual projection neurons either fires the Giant Fiber by
+   itself or abolishes its looming response (24 configurations), so the context had to enter at the Kenyon cells — a
+   flagged deviation from our own rule; and the published model can *ignite*: after some crashes a third of all
+   Kenyon cells fire in self-sustained volleys (dopamine is a fast excitatory transmitter in it and nothing adapts).
+   The second hypothesis — mushroom-body output sets the looming gain, a documented model assumption — is reported in
+   the research log with the same protocol and controls.
 
 ## How it works
 
@@ -78,7 +89,7 @@ Full local + cloud setup: [`docs/DEPLOY.md`](docs/DEPLOY.md).
 | 1 Innate escape, game engine, naive play vs. controls | done |
 | 2 Web dashboard, live brain map, worker | done (brain map v1 is group-level) |
 | 3 API, DB, replay validation, leaderboard | done locally; web deployed; **Railway API deploy blocked** (see DEPLOY.md) |
-| 4 Learning (KC→MBON plasticity) | implemented; results in RESEARCH.md as they are measured |
+| 4 Learning (KC→MBON plasticity) | measured: H1 (real wiring only) → no learning effect; H2 (model assumption) → see RESEARCH.md; open decisions D13, D17 |
 | 5 Crowd teaching | implemented + unit-tested; **not yet measured** (needs human runs) |
 | 6 Hardware | firmware + pose pipeline written; both firmware projects compile with PlatformIO; **not yet tested on hardware** |
 | 7–8 Stretch, MaleCNS, v1.0 write-up | not started |

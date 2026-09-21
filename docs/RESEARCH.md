@@ -4,6 +4,17 @@ Every number in this document is rendered from a JSON file written by a script i
 (`python -m experiments.report` fills the blocks between `BEGIN/END` markers; CI fails if they are stale).
 Anything without a number is **not yet measured**.
 
+## Findings at a glance
+
+<!-- BEGIN:summary -->
+1. **The engine is the published model.** Spike-for-spike identical to Brian2 on the real connectome; the published sugar → MN9 curve is reproduced with 0.89 Hz RMSE.
+2. **The naive fly plays, the wiring is necessary, the brain adds no skill yet.** Held-out score 83.3 vs. 40.0 for never jumping and 40.0 with the Giant Fiber silenced; a bare threshold on the transducer, without any brain, scores 281.5.
+3. **The mushroom body barely touches the escape circuit, and visual context cannot be fed to it cleanly.** 10 of 35 MBON types can suppress the Giant Fiber, none excites it; 0 of 24 ways of driving KC-projecting visual neurons leave the looming reflex intact, so the context is delivered at the Kenyon cells (a flagged deviation).
+4. **The published model can ignite.** 2 of 13 crashes were followed by self-sustained volleys of ≈ 1632 of 5,177 Kenyon cells.
+5. **H1 — learning through the real wiring only:** generation 0 → 5: 88.6 → 85.6 (Δ -3.0, paired 95% CI [-6.0, -0.8]); vs. shuffled dopamine Δ +0.0 [+0.0, +0.0] → **no learning effect** by the pre-declared criteria.
+6. **H2 — mushroom-body output sets the looming gain (model assumption):** not yet measured.
+<!-- END:summary -->
+
 ## Rules of the game
 
 1. Connectome weights are frozen as reconstructed (FlyWire 783); 2. the only learning mechanism (Phase 4+) is

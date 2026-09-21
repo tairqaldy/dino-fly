@@ -15,6 +15,8 @@ import re
 import sys
 from collections.abc import Callable
 
+import numpy as np
+
 from flybrain.config import repo_root, results_dir
 
 NOT_MEASURED = "not yet measured"
@@ -155,6 +157,50 @@ def render_benchmark() -> str:
     return "\n".join(lines)
 
 
+def render_summary() -> str:
+    """The findings at a glance — every number straight from the result files, 'not yet measured' where there is none."""
+    from flybrain.stats import paired_comparison
+
+    sugar, naive, infl, drive_vpn, volley = (_load(n) for n in ("sugar_mn9", "naive_play", "mbon_influence", "mb_drive", "kc_volley"))
+    out = []
+    if sugar:
+        c = sugar["criterion"]
+        out.append(f"1. **The engine is the published model.** Spike-for-spike identical to Brian2 on the real connectome; the published sugar → MN9 curve "
+                   f"is reproduced with {_f(c['neurons']['mn9_published']['rmse_hz'], 2)} Hz RMSE.")
+    if naive:
+        cond = naive["conditions"]
+        out.append(f"2. **The naive fly plays, the wiring is necessary, the brain adds no skill yet.** Held-out score "
+                   f"{_f(cond['intact']['score_stats']['mean'])} vs. {_f(cond['never_jump']['score_stats']['mean'])} for never jumping and "
+                   f"{_f(cond['gf_ablated']['score_stats']['mean'])} with the Giant Fiber silenced; a bare threshold on the transducer, without any brain, "
+                   f"scores {_f(cond['m0_threshold']['score_stats']['mean'])}.")
+    if infl and drive_vpn:
+        n_strong = sum(abs(v["delta_p_spike"]) > infl["noise_band_delta_p"] for v in infl["mbon_types"])
+        n_ok = sum(r["reflex_preserved"] for r in drive_vpn["rows"])
+        out.append(f"3. **The mushroom body barely touches the escape circuit, and visual context cannot be fed to it cleanly.** {n_strong} of "
+                   f"{len(infl['mbon_types'])} MBON types can suppress the Giant Fiber, none excites it; {n_ok} of {len(drive_vpn['rows'])} ways of driving "
+                   "KC-projecting visual neurons leave the looming reflex intact, so the context is delivered at the Kenyon cells (a flagged deviation).")
+    if volley:
+        out.append(f"4. **The published model can ignite.** {len(volley['onsets'])} of {volley['crashes']} crashes were followed by self-sustained volleys of "
+                   f"≈ {_f(volley['kcs_active_per_volley_frame_median'], 0)} of {volley['protocol']['n_kc']:,} Kenyon cells.")
+    for i, (name, label) in enumerate((("learning", "H1 — learning through the real wiring only"),
+                                       ("learning_h2", "H2 — mushroom-body output sets the looming gain (model assumption)")), start=5):
+        r = _load(name)
+        if not r:
+            out.append(f"{i}. **{label}:** {NOT_MEASURED}.")
+            continue
+        normal = [c for c in r["conditions"]["normal"] if "heldout" in c]
+        a, b = (np.array(normal[k]["heldout"]["score"]) for k in (-1, 0))
+        pc = paired_comparison(a, b)
+        shuffled = [c for c in r["conditions"].get("shuffled_da", []) if "heldout" in c]
+        vs = paired_comparison(a, np.array(shuffled[-1]["heldout"]["score"])) if shuffled else None
+        learned = pc["mean_diff_ci95"][0] > 0 and vs is not None and vs["mean_diff_ci95"][0] > 0
+        out.append(f"{i}. **{label}:** generation 0 → {normal[-1]['generation']}: {_f(b.mean())} → {_f(a.mean())} (Δ {a.mean() - b.mean():+.1f}, paired 95% CI "
+                   f"[{pc['mean_diff_ci95'][0]:+.1f}, {pc['mean_diff_ci95'][1]:+.1f}])"
+                   + (f"; vs. shuffled dopamine Δ {vs['mean_diff']:+.1f} [{vs['mean_diff_ci95'][0]:+.1f}, {vs['mean_diff_ci95'][1]:+.1f}]" if vs else "")
+                   + f" → **{'learning effect' if learned else 'no learning effect'}** by the pre-declared criteria.")
+    return "\n".join(out) if out else NOT_MEASURED
+
+
 def _later(name: str, module_name: str | None = None, fn_name: str = "render_report") -> Callable[[], str]:
     def render() -> str:
         try:
@@ -169,6 +215,7 @@ def _later(name: str, module_name: str | None = None, fn_name: str = "render_rep
 
 
 RENDERERS: dict[str, Callable[[], str]] = {
+    "summary": render_summary,
     "sugar_mn9": render_sugar_mn9,
     "benchmark": render_benchmark,
     "looming_gf": _later("looming_gf"),

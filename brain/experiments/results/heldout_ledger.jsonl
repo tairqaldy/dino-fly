@@ -1,2 +1,3 @@
 {"timestamp_utc": "2026-09-20T19:49:18+00:00", "experiment": "naive_play", "git_commit": "0680018c68fcc3bc87711459b9e2bcdc843eb074", "prereg_tag": "prereg-phase1", "conditions": ["all conditions listed in the module docstring"]}
 {"timestamp_utc": "2026-09-20T22:43:26+00:00", "experiment": "learning", "git_commit": "0b887a23faaf00c4d80bcde45ae5ae30fee7208b", "prereg_tag": "prereg-phase4-h1", "conditions": ["normal", "shuffled_da", "random_plasticity", "no_da"]}
+{"timestamp_utc": "2026-09-21T00:22:35+00:00", "experiment": "learning_h2", "git_commit": "7a86a7e6c7e19effe5b26daaeadc6e77bfd3a59c", "prereg_tag": "prereg-phase4-h2", "conditions": ["normal", "shuffled_da", "random_plasticity", "no_da"]}

@@ -26,17 +26,24 @@ export function connectPose(url: string, onAction: (a: PoseAction) => void, onSt
   let ws: WebSocket | null = null;
   let closed = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let retryMs = 2000;
   const open = () => {
     if (closed) return;
     ws = new WebSocket(url);
-    ws.onopen = () => onStatus(true);
+    ws.onopen = () => {
+      retryMs = 2000;
+      onStatus(true);
+    };
     ws.onmessage = (e) => {
       const action = parsePoseMessage(e.data);
       if (action) onAction(action);
     };
     ws.onclose = () => {
       onStatus(false);
-      if (!closed) timer = setTimeout(open, 2000);
+      if (!closed) {
+        timer = setTimeout(open, retryMs);
+        retryMs = Math.min(30_000, retryMs * 2); // the tracker is usually just not running: back off
+      }
     };
     ws.onerror = () => ws?.close();
   };
