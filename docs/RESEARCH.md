@@ -12,7 +12,7 @@ Anything without a number is **not yet measured**.
 3. **The mushroom body barely touches the escape circuit, and visual context cannot be fed to it cleanly.** 10 of 35 MBON types can suppress the Giant Fiber, none excites it; 0 of 24 ways of driving KC-projecting visual neurons leave the looming reflex intact, so the context is delivered at the Kenyon cells (a flagged deviation).
 4. **The published model can ignite.** 2 of 13 crashes were followed by self-sustained volleys of ≈ 1632 of 5,177 Kenyon cells.
 5. **H1 — learning through the real wiring only:** generation 0 → 5: 88.6 → 85.6 (Δ -3.0, paired 95% CI [-6.0, -0.8]); vs. shuffled dopamine Δ +0.0 [+0.0, +0.0] → **no learning effect** by the pre-declared criteria.
-6. **H2 — mushroom-body output sets the looming gain (model assumption):** not yet measured.
+6. **H2 — mushroom-body output sets the looming gain (model assumption):** generation 0 → 5: 90.6 → 160.3 (Δ +69.7, paired 95% CI [+40.6, +101.3]); vs. shuffled dopamine Δ +0.0 [+0.0, +0.0] → **no learning effect** by the pre-declared criteria.
 <!-- END:summary -->
 
 ## Rules of the game
@@ -522,8 +522,50 @@ Source: `results/gain_sensitivity.json`.
 <!-- END:gain_sensitivity -->
 
 <!-- BEGIN:learning_h2 -->
-not yet measured
+Plastic set: **62,261 KC→MBON connections** (5,177 KCs, 96 MBONs; 96 MBONs receive PAM/PPL1 input = our compartment proxy). η = 3.54e-06 (synaptic pilot criterion), τ_e = 1500 ms, gains ∈ [0.0, 2.0]. Context: delivered directly to 388 visual Kenyon cells (deviation, DECISIONS.md D13), code `class_only`, 40 Hz (fixed by the context diagnostic above). 5 generations × 64 training games.
+
+H2 mapping: 25 glutamatergic (avoidance-type) and 71 GABAergic / cholinergic (approach-type) MBONs; looming gain = G · 2^clip(A₊/Ā₊ − A₋/Ā₋, −1, 1), τ = 300 ms. Naive summed firing while playing, per context: avoidance-type 0.0–0.6 Hz (below the 1 Hz floor → that term is off), approach-type 262–270 Hz.
+
+| condition | generation | held-out score mean [95% CI] | median | obstacles cleared | P(jump / approach) | synapses changed | top-1 % depression | mean gain shift (octaves) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| normal | 0 | 90.6 [81.4, 100.6] | 82 | 5.23 | 0.84 | 0.0% | 0.00 | +0.01 |
+| normal | 1 | 159.6 [132.2, 188.8] | 101 | 11.04 | 0.95 | 24.5% | 0.99 | +0.99 |
+| normal | 3 | 160.3 [132.9, 190.2] | 102 | 11.11 | 0.95 | 30.7% | 1.00 | +1.00 |
+| normal | 5 | 160.3 [133.0, 190.2] | 102 | 11.11 | 0.95 | 35.7% | 1.00 | +1.00 |
+| shuffled_da | 5 | 160.3 [132.9, 190.2] | 102 | 11.11 | 0.95 | 26.7% | 1.00 | +1.00 |
+| random_plasticity | 5 | 101.3 [90.5, 112.7] | 86 | 6.28 | 0.87 | as normal, permuted | — | +0.07 |
+
+no_da: after 32 training games without dopamine Σ|Δg| = 0 — the rule is inert without dopamine, so this brain is generation 0.
+
+**Generation 5 vs. generation 0 (same held-out seeds and noise):** Δ score = +69.7 (paired 95% CI [+40.6, +101.3], Wilcoxon p = 0.00043). Dopamine events during training: 4562 rewards, 320 punishments.
+Held-out games with exactly the same score as in generation 5 (of 100): generation 0: 3; generation 1: 91; generation 3: 99; shuffled_da: 99; random_plasticity: 4.
+Last generation vs. shuffled_da: Δ = +0.0 (paired 95% CI [+0.0, +0.0], Wilcoxon p = 1).
+Last generation vs. random_plasticity: Δ = +59.0 (paired 95% CI [+30.5, +89.7], Wilcoxon p = 0.01).
+
+**Pre-declared verdict: no learning effect** (the criteria — better than generation 0 *and* better than shuffled dopamine, both with a 95% CI excluding 0 — are not met).
+
+![learning curve](figures/learning_h2.png)
+
+Source: `results/learning_h2.json`; gain vectors per generation in `brain/checkpoints/learning_h2/` (not committed).
 <!-- END:learning_h2 -->
+
+**Reading.** Under H2 the score almost doubles within 64 training games — and the pre-declared verdict is still *no
+learning effect*, which is the right call. What happens: the only MBONs the visual context drives are approach-type
+(the glutamatergic, avoidance-type ones fire < 1 Hz in every context, so their term of the mapping is switched off);
+the rule can only depress; every reward depresses the active KC→approach-MBON synapses a little; their response
+collapses and the hand-written mapping pins the looming gain at its ceiling of 2 G (mean shift +0.99 octaves after
+generation 1, +1.00 afterwards). The score then sits where the table above says a fly with a gain of 2 G sits without
+any mushroom body. Rewards delivered at *random* moments end in exactly the same place (99 of 100 held-out games
+identical), so nothing about *when* the dopamine arrives — nothing the fly did — is being learned. The same gain
+values on random synapses shift the gain by only +0.07 octaves, so the effect does run through the specific visually
+driven synapses; it is simply not contingent on behaviour. In this connectome and with a depression-only rule, H2 as we defined it is a one-way ratchet:
+any dopamine raises the gain, and a higher gain happens to be better because the frozen G sits on the low side of the
+optimum. We report the 160 as what it is — an experience-independent bias shift under a model assumption — and not as
+the fly learning to play.
+
+**What would make this a real test.** A context that reaches both valence classes of MBONs (a pixel-based visual front
+end instead of hand-written codes), a rule with recovery or potentiation so that the gains can come back down, and a
+punishment that can be tied to the situation that caused it. All three are future work; none is a learned layer.
 
 ## Phase 5 — Does teaching by humans help?
 

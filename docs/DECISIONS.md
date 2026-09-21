@@ -144,7 +144,12 @@ neutral; with the play-based baseline the naive brain's mean shift on DEV seeds 
 *training*, reward bursts excite MBONs directly (dopaminergic synapses are excitatory in the model), which lowers the
 gain by ≈ 0.18 octaves on average during training games; evaluation has no bursts and is unaffected. In this
 connectome the glutamatergic (avoidance-type) MBONs are practically silent under the visual context, so the mapping
-is effectively one-sided: less approach-type firing → higher gain. **Ask:** is this the H2 you had in mind?
+is effectively one-sided: less approach-type firing → higher gain.
+**Result** (`results/learning_h2.json`): the score rises 90.6 → 160.3, identically with shuffled dopamine → by the
+pre-declared criteria *no learning effect*; with a depression-only rule this H2 is a one-way ratchet to the 2 G
+ceiling. **Ask:** is this the H2 you had in mind, and do you want a follow-up with a recovery / potentiation term in
+the rule (Handler et al. 2019 describe bidirectional, timing-dependent plasticity) — which would be a change to the
+brief's rule and therefore your call?
 
 ## D18 — "No dopamine" means silenced dopaminergic neurons · decided
 

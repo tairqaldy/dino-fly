@@ -68,8 +68,18 @@ H2: mushroom-body output sets the looming gain — a documented model assumption
 - Doubling the looming gain by hand roughly doubles the naive DEV score (88.7 → 174–190), so H2 has room to show an
   effect if the mushroom body moves the gain the right way.
 
-**Learning results.** Rendered into RESEARCH.md from `results/learning.json` (H1) and `results/learning_h2.json` (H2)
-as soon as each run finishes; anything still missing there reads "not yet measured".
+**Learning results (100 forever-held-out seeds, pre-registered criteria: beat generation 0 *and* beat shuffled
+dopamine, both with a 95 % CI excluding 0).**
+- **H1 — real wiring only: no learning effect.** 88.6 → 85.6 after generation 1 (Δ −3.0 [−6.0, −0.8]), then frozen:
+  generations 1, 3, 5 and the shuffled-dopamine control play all 100 games identically. A technical check
+  (`eval_invariance`) shows an evaluation depends on the gain vector only (used = fresh network, dense = active set).
+- **H2 — mushroom-body output sets the looming gain (model assumption): no learning effect either**, although the
+  score goes 90.6 → 160.3 (Δ +69.7 [+40.6, +101.3]). Shuffled dopamine reaches the same 160.3 (99 of 100 games
+  identical): the context only drives approach-type MBONs, the rule only depresses, so any dopamine ratchets the gain
+  to its 2 G ceiling — and 2 G plays better (DEV sensitivity: 88.7 at G, 174 at 2 G). Random re-assignment of the
+  learned gains: 101.3.
+- So Phase 4 ends with an honest negative: in this model, with this rule, the fly does not *learn* to play. What would
+  make it a real test is listed at the end of the H2 section of RESEARCH.md.
 
 ## Phase 5 — Crowd teaching · implemented, not yet measured
 

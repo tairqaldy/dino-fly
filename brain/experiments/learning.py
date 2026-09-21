@@ -336,8 +336,11 @@ def render_report(r: dict) -> str:
     ]
     if r["hypothesis"] == "h2":
         h = r["h2"]
+        naive = np.array(h["naive_mbon_hz_avoidance_approach_per_context"])
         lines += ["", f"H2 mapping: {h['n_avoidance_mbons']} glutamatergic (avoidance-type) and {h['n_approach_mbons']} GABAergic / cholinergic (approach-type) "
-                      f"MBONs; looming gain = G · 2^clip(A₊/Ā₊ − A₋/Ā₋, −1, 1), τ = {pl['sensory_gain']['tau_ms']:.0f} ms."]
+                      f"MBONs; looming gain = G · 2^clip(A₊/Ā₊ − A₋/Ā₋, −1, 1), τ = {pl['sensory_gain']['tau_ms']:.0f} ms. Naive summed firing while playing, per "
+                      f"context: avoidance-type {naive[:, 0].min():.1f}–{naive[:, 0].max():.1f} Hz (below the {pl['sensory_gain']['min_baseline_hz']:g} Hz floor → "
+                      f"that term is off), approach-type {naive[:, 1].min():.0f}–{naive[:, 1].max():.0f} Hz."]
     lines += [
         "",
         "| condition | generation | held-out score mean [95% CI] | median | obstacles cleared | P(jump / approach) | synapses changed | top-1 % depression |"

@@ -41,8 +41,12 @@ All numbers: `docs/RESEARCH.md`, rendered from `brain/experiments/results/*.json
    itself or abolishes its looming response (24 configurations), so the context had to enter at the Kenyon cells — a
    flagged deviation from our own rule; and the published model can *ignite*: after some crashes a third of all
    Kenyon cells fire in self-sustained volleys (dopamine is a fast excitatory transmitter in it and nothing adapts).
-   The second hypothesis — mushroom-body output sets the looming gain, a documented model assumption — is reported in
-   the research log with the same protocol and controls.
+6. **A number we refuse to call learning.** Under the second hypothesis (H2: mushroom-body output sets the looming
+   gain — a documented model assumption, still no learned layer) the held-out score goes from 90.6 to 160.3 in one
+   generation. But rewards delivered at *random* moments end at exactly the same 160.3 (99 of 100 games identical):
+   any dopamine depresses the only MBONs the context reaches, the gain ratchets to its ceiling of 2 G, and 2 G happens
+   to play better. By the criteria fixed before the run — beat generation 0 *and* beat shuffled dopamine — the verdict
+   is **no learning effect**. The research log says what would make it a real test.
 
 ## How it works
 
@@ -89,7 +93,7 @@ Full local + cloud setup: [`docs/DEPLOY.md`](docs/DEPLOY.md).
 | 1 Innate escape, game engine, naive play vs. controls | done |
 | 2 Web dashboard, live brain map, worker | done (brain map v1 is group-level) |
 | 3 API, DB, replay validation, leaderboard | done locally; web deployed; **Railway API deploy blocked** (see DEPLOY.md) |
-| 4 Learning (KC→MBON plasticity) | measured: H1 (real wiring only) → no learning effect; H2 (model assumption) → see RESEARCH.md; open decisions D13, D17 |
+| 4 Learning (KC→MBON plasticity) | measured, pre-registered: H1 (real wiring only) → no learning effect; H2 (model assumption) → score 90.6 → 160.3 but identical with shuffled dopamine → no learning effect; open decisions D13, D17 |
 | 5 Crowd teaching | implemented + unit-tested; **not yet measured** (needs human runs) |
 | 6 Hardware | firmware + pose pipeline written; both firmware projects compile with PlatformIO; **not yet tested on hardware** |
 | 7–8 Stretch, MaleCNS, v1.0 write-up | not started |
