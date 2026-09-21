@@ -138,7 +138,13 @@ firing of avoidance-type (glutamatergic) / approach-type (GABAergic, cholinergic
 for the same class × proximity bin (`flybrain.learn.SensoryGainParams`). Choices that are ours: valence by predicted
 transmitter (Aso et al. 2014), the ±1-octave range, τ, normalising by the naive response so that a naive brain plays
 at exactly G (otherwise "learning" could merely undo a handicap we introduced). All were fixed before any H2 game.
-**Ask:** is this the H2 you had in mind?
+Two things the pilot showed (`results/learning_h2_pilot.json`; gain shifts only, no scores): (a) the naive response
+has to be measured while the naive fly really plays — a first calibration on replayed never-jump approaches was not
+neutral; with the play-based baseline the naive brain's mean shift on DEV seeds is +0.01 octaves. (b) While
+*training*, reward bursts excite MBONs directly (dopaminergic synapses are excitatory in the model), which lowers the
+gain by ≈ 0.18 octaves on average during training games; evaluation has no bursts and is unaffected. In this
+connectome the glutamatergic (avoidance-type) MBONs are practically silent under the visual context, so the mapping
+is effectively one-sided: less approach-type firing → higher gain. **Ask:** is this the H2 you had in mind?
 
 ## D18 — "No dopamine" means silenced dopaminergic neurons · decided
 

@@ -1,0 +1,37 @@
+{
+  "experiment": "eval_invariance",
+  "protocol": {
+    "seeds": "DEV_SEEDS[:32]",
+    "training_games": 64,
+    "eta": 1.62e-06
+  },
+  "mean_score": {
+    "A_fresh_naive": 88.0,
+    "B_trained": 89.21875,
+    "C_same_net_gains_reset": 88.0,
+    "D_fresh_net_trained_gains": 89.21875,
+    "E_fresh_dense_naive": 88.0,
+    "F_phase1_active_set": 88.65625,
+    "G_phase1_dense": 88.65625
+  },
+  "games_identical": {
+    "C_vs_A": 32,
+    "D_vs_B": 32,
+    "B_vs_A": 30,
+    "E_vs_A": 32,
+    "E_vs_C": 32,
+    "G_vs_F": 32
+  },
+  "n_games": 32,
+  "fraction_of_gains_changed_by_training": 0.06183646263310901,
+  "meta": {
+    "timestamp_utc": "2026-09-21T00:07:20+00:00",
+    "git_commit": "5d795e774f6c5a0c09b548aaf7cbbd5f58979668",
+    "git_dirty": true,
+    "python": "3.12.12",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "torch": "2.14.0+cu130",
+    "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+    "cuda": "13.0"
+  }
+}

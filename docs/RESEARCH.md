@@ -390,9 +390,23 @@ Source: `results/da_burst.json`.
 
 **Reading.** Neither a PAM nor a PPL1 burst alone ignites the mushroom body, with or without the visual context, so
 the transducer keeps the strongest burst of the grid. The volleys after crashes need the state a real game leaves
-behind (they follow the game seed, not the batch column — the engine is column-invariant); we did not dissect the
-mechanism further. They are a property of the published model that anyone building plasticity on top of it should
-know about.
+behind (they follow the game seed, not the batch column — the engine is column-invariant). We did not dissect the
+mechanism; the wiring suggests where to look (a hypothesis, not a result):
+
+<!-- BEGIN:kc_loops -->
+| loop through the Kenyon cells | neurons | predicted transmitter | synapses onto KCs | sign in the model | synapses from KCs |
+|---|---:|---|---:|---|---:|
+| Kenyon cells (KC → KC) | 5,177 | acetylcholine | 379,338 | excitatory | 379,338 |
+| APL | 2 | gaba | 98,654 | inhibitory | 116,878 |
+| DPM | 2 | dopamine | 9,280 | excitatory | 88,051 |
+
+Source: `results/mb_wiring.json` (connectome only).
+<!-- END:kc_loops -->
+
+In the model every one of those Kenyon-cell-to-Kenyon-cell synapses is a fast excitatory connection, the DPM neurons
+(predicted dopaminergic, hence excitatory here) close a second positive loop, and two APL neurons are the only brake.
+Whatever the biology of these synapses really is, this is a property of the published model that anyone building
+plasticity on top of it should know about.
 
 ## Phase 4 — Does the fly learn? H1: only through the real wiring
 
@@ -409,8 +423,58 @@ and the network itself makes them fire a little (endogenous dopamine). "Shuffled
 at random moments instead of after a cleared obstacle; the punishment stays after the crash (DECISIONS.md D20).
 
 <!-- BEGIN:learning -->
-not yet measured
+Plastic set: **62,261 KC→MBON connections** (5,177 KCs, 96 MBONs; 96 MBONs receive PAM/PPL1 input = our compartment proxy). η = 1.62e-06 (synaptic pilot criterion), τ_e = 1500 ms, gains ∈ [0.0, 2.0]. Context: delivered directly to 388 visual Kenyon cells (deviation, DECISIONS.md D13), code `class_only`, 40 Hz (fixed by the context diagnostic above). 5 generations × 64 training games.
+
+| condition | generation | held-out score mean [95% CI] | median | obstacles cleared | P(jump / approach) | synapses changed | top-1 % depression |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| normal | 0 | 88.6 [79.9, 97.7] | 81 | 5.04 | 0.84 | 0.0% | 0.00 |
+| normal | 1 | 85.6 [77.1, 94.8] | 72 | 4.73 | 0.83 | 9.4% | 0.39 |
+| normal | 3 | 85.6 [77.1, 94.8] | 72 | 4.73 | 0.83 | 21.2% | 0.68 |
+| normal | 5 | 85.6 [77.1, 94.8] | 72 | 4.73 | 0.83 | 24.6% | 0.90 |
+| shuffled_da | 5 | 85.6 [77.1, 94.8] | 72 | 4.73 | 0.83 | 27.0% | 0.66 |
+| random_plasticity | 5 | 87.9 [79.2, 97.0] | 75 | 4.96 | 0.84 | as normal, permuted | — |
+
+no_da: after 32 training games without dopamine Σ|Δg| = 0 — the rule is inert without dopamine, so this brain is generation 0.
+
+**Generation 5 vs. generation 0 (same held-out seeds and noise):** Δ score = -3.0 (paired 95% CI [-6.0, -0.8], Wilcoxon p = 0.016). Dopamine events during training: 1558 rewards, 320 punishments.
+Held-out games with exactly the same score as in generation 5 (of 100): generation 0: 93; generation 1: 100; generation 3: 100; shuffled_da: 100; random_plasticity: 94.
+Last generation vs. shuffled_da: Δ = +0.0 (paired 95% CI [+0.0, +0.0], Wilcoxon p = 1).
+Last generation vs. random_plasticity: Δ = -2.3 (paired 95% CI [-5.2, -0.0], Wilcoxon p = 0.094).
+
+**Pre-declared verdict: no learning effect** (the criteria — better than generation 0 *and* better than shuffled dopamine, both with a 95% CI excluding 0 — are not met).
+
+![learning curve](figures/learning.png)
+
+Source: `results/learning.json`; gain vectors per generation in `brain/checkpoints/learning/` (not committed).
 <!-- END:learning -->
+
+**Reading.** H1 is falsified in this model, as predicted. The held-out score does not rise; it drops by three points
+in the first generation — the whole difference sits in 7 of the 100 games — and then does not move at all:
+generations 1, 3 and 5 play all 100 held-out games identically although the synapses keep changing, and rewards
+delivered at random moments lead to exactly the same 100 games. The same gain values assigned to random synapses
+change a different handful of games. So a few specific, visually driven KC→MBON synapses do reach the Giant Fiber
+(the wiring table above suggests MBON05 / MBON35 / MBON20); any dopamine-gated depression, contingent or not,
+removes that small influence within 64 games, and nothing the rule changes afterwards is felt by the escape circuit.
+The brief's sentence applies: *plasticity at KC→MBON does not reach the escape circuit strongly enough in this
+model.*
+
+Is a difference between generations a property of the synapses, or of the network's history? A technical check:
+
+<!-- BEGIN:eval_invariance -->
+DEV_SEEDS[:32], H1 set-up, 64 training games between A and B; identical = same final score, game by game.
+
+| comparison | must be identical because | games identical | mean scores |
+|---|---|---:|---|
+| C vs. A | same gains (all 1), used vs. fresh network | 32 / 32 | 88.0 vs. 88.0 |
+| D vs. B | same trained gains, fresh vs. used network | 32 / 32 | 89.2 vs. 89.2 |
+| E vs. A | dense engine vs. lazily grown active set, naive gains | 32 / 32 | 88.0 vs. 88.0 |
+| G vs. F | the same for the Phase-1 set-up (no learner, no plastic path) | 32 / 32 | 88.7 vs. 88.7 |
+| B vs. A | (not required) trained vs. naive gains | 30 / 32 | 89.2 vs. 88.0 |
+
+**All required identities hold: an evaluation depends on the gain vector only.**
+
+Source: `results/eval_invariance.json`.
+<!-- END:eval_invariance -->
 
 ## Phase 4 — Second hypothesis, H2: mushroom-body output sets the looming gain
 

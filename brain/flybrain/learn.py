@@ -64,6 +64,7 @@ class Learner:
         self._rng = np.random.default_rng(da_seed)
         self.rewards = self.punishments = self.shuffled_bursts = 0
         self.spike_totals = {"kc": 0, "mbon": 0, "dan": 0, "frames": 0, "kc_volley_column_frames": 0}
+        self._ctx_now = np.full(self.b, -1)  # class × proximity bin of the obstacle in view, per column (−1: none)
         # ---- H2 (optional)
         self.sensory_gain_params = sensory_gain
         if sensory_gain is not None:
@@ -77,7 +78,6 @@ class Learner:
             self._decay = math.exp(-frame_ms / sensory_gain.tau_ms)
             self._act = np.zeros((2, self.b))
             self._base = np.zeros((2, self.b))
-            self._ctx_now = np.full(self.b, -1)
             self.gain_log_sum = 0.0  # Σ log2(gain) over (frame, column) with an obstacle in view → mean modulation
             self.gain_log_n = 0
 
@@ -93,16 +93,17 @@ class Learner:
     def start_game(self, col: int) -> None:
         self.rule.reset_columns(np.array([col]))
         self.reward[col], self.punish[col] = DopamineChannel(self.dopamine), DopamineChannel(self.dopamine)
+        self._ctx_now[col] = -1
         if self.sensory_gain_params is not None:
             self._act[:, col] = 0.0
             self._base[:, col] = 0.0
-            self._ctx_now[col] = -1
 
     def extra_rates(self, games, views, tails) -> np.ndarray:
         n_ctx, n_pam, n_ppl1 = len(self.context_vpns), len(self.pam), len(self.ppl1)
         out = np.zeros((n_ctx + n_pam + n_ppl1, self.b))
         for col, g in enumerate(games):
             if g is None:
+                self._ctx_now[col] = -1
                 continue
             view = views[col]
             ctx = -1
@@ -110,8 +111,7 @@ class Learner:
                 o = g.state.obstacles[view.obstacle_index]
                 ctx = context_index(o.type, view.theta_deg)
                 out[:n_ctx, col] = context_rates(n_ctx, o.type, view.theta_deg, self.context)
-            if self.sensory_gain_params is not None:
-                self._ctx_now[col] = ctx
+            self._ctx_now[col] = ctx
             # shuffled-DA ablation: rewards arrive at random moments instead of after a cleared obstacle. Punishments
             # stay where they are (after the crash): a PPL1 burst inside a running game ignites self-sustained
             # Kenyon-cell volleys in this model (pilot at commit 76c98e6: 1,384 volley column-frames vs. 17).

@@ -52,8 +52,23 @@ def main() -> int:
                      "gf_influence_delta_p": influence.get(t)})
     rows.sort(key=lambda r: -r["synapses_from_visual_kcs"])
     total = sum(r["synapses_from_visual_kcs"] for r in rows)
+
+    # what could sustain the post-crash Kenyon-cell volleys (experiments/kc_volley.py)? Recurrent loops through the KCs.
+    is_kc = np.zeros(conn.n, dtype=bool)
+    is_kc[ix["KC"]] = True
+    w = conn.weight.astype(np.int64)
+    kk = is_kc[conn.pre] & is_kc[conn.post]
+    loops = [{"partner": "Kenyon cells (KC → KC)", "n_neurons": len(ix["KC"]), "top_nt": "acetylcholine", "synapses_onto_kcs": int(np.abs(w[kk]).sum()),
+              "sign_in_model": "excitatory" if (w[kk] > 0).all() else "mixed", "synapses_from_kcs": int(np.abs(w[kk]).sum())}]
+    for t in ("APL", "DPM"):
+        ids = ann.loc[ann["cell_type"] == t, "root_id"].astype("int64").to_numpy()
+        members = conn.index_of(ids[np.isin(ids, conn.root_ids)])
+        onto = conn.weight[conn.edge_mask(pre_idx=members, post_idx=ix["KC"])]
+        loops.append({"partner": t, "n_neurons": len(members), "top_nt": "/".join(sorted({str(by_id.at[int(conn.root_ids[i]), "top_nt"]) for i in members})),
+                      "synapses_onto_kcs": int(np.abs(onto).sum()), "sign_in_model": "excitatory" if (onto > 0).all() else "inhibitory" if (onto < 0).all() else "mixed",
+                      "synapses_from_kcs": synapses(ix["KC"], members)})
     write_result(NAME, {"protocol": {"n_visual_kcs": len(visual_kc), "n_kcs": len(ix["KC"]), "gf_influence_noise_band": band},
-                        "visual_kc_to_mbon_synapses": total, "rows": rows})
+                        "visual_kc_to_mbon_synapses": total, "rows": rows, "kc_loops": loops})
     for r in rows[:12]:
         print(r)
     return 0
@@ -79,6 +94,13 @@ def render_report(r: dict) -> str:
     lines += ["", f"MBON types that move the Giant Fiber outside the noise band of the influence map receive **{share:.0%}** of the visual-KC → MBON "
                   f"synapses ({', '.join(f'{row["cell_type"]} {row["synapses_from_visual_kcs"]:,}' for row in sorted(strong, key=lambda x: -x['synapses_from_visual_kcs'])[:5])}, …).",
               "", "Source: `results/mb_wiring.json` (connectome only; ΔP from `results/mbon_influence.json`)."]
+    return "\n".join(lines)
+
+
+def render_loops(r: dict) -> str:
+    lines = ["| loop through the Kenyon cells | neurons | predicted transmitter | synapses onto KCs | sign in the model | synapses from KCs |", "|---|---:|---|---:|---|---:|"]
+    lines += [f"| {x['partner']} | {x['n_neurons']:,} | {x['top_nt']} | {x['synapses_onto_kcs']:,} | {x['sign_in_model']} | {x['synapses_from_kcs']:,} |" for x in r["kc_loops"]]
+    lines += ["", "Source: `results/mb_wiring.json` (connectome only)."]
     return "\n".join(lines)
 
 

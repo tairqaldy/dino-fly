@@ -393,9 +393,35 @@
       "gf_influence_delta_p": -0.025000000000000022
     }
   ],
+  "kc_loops": [
+    {
+      "partner": "Kenyon cells (KC \u2192 KC)",
+      "n_neurons": 5177,
+      "top_nt": "acetylcholine",
+      "synapses_onto_kcs": 379338,
+      "sign_in_model": "excitatory",
+      "synapses_from_kcs": 379338
+    },
+    {
+      "partner": "APL",
+      "n_neurons": 2,
+      "top_nt": "gaba",
+      "synapses_onto_kcs": 98654,
+      "sign_in_model": "inhibitory",
+      "synapses_from_kcs": 116878
+    },
+    {
+      "partner": "DPM",
+      "n_neurons": 2,
+      "top_nt": "dopamine",
+      "synapses_onto_kcs": 9280,
+      "sign_in_model": "excitatory",
+      "synapses_from_kcs": 88051
+    }
+  ],
   "meta": {
-    "timestamp_utc": "2026-09-20T22:52:22+00:00",
-    "git_commit": "7c6fdfdae90dcd62ce9407e881116aaf452ec887",
+    "timestamp_utc": "2026-09-20T23:08:21+00:00",
+    "git_commit": "5d795e774f6c5a0c09b548aaf7cbbd5f58979668",
     "git_dirty": true,
     "python": "3.12.12",
     "platform": "Windows-11-10.0.26200-SP0",

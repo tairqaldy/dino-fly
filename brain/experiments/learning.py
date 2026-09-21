@@ -59,8 +59,8 @@ from flybrain.learn import Learner, SensoryGainParams
 from flybrain.plasticity import PlasticityParams
 from flybrain.play import BIO_MS_PER_FRAME, play_games
 from flybrain.stats import paired_comparison
-from flybrain.transducer.context import N_CONTEXTS, context_index, context_neurons, context_rates
-from flybrain.transducer.looming import FROZEN, population_rates
+from flybrain.transducer.context import N_CONTEXTS, context_neurons
+from flybrain.transducer.looming import FROZEN
 
 NAMES = {"h1": "learning", "h2": "learning_h2"}
 GAMES_PER_GEN = 64
@@ -156,35 +156,34 @@ def main() -> int:
         nt_of = dict(zip(ann["root_id"].astype("int64"), ann["top_nt"].fillna(""), strict=True))
         nt = np.array([nt_of.get(int(conn.root_ids[i]), "") for i in mbon_sorted])
         valence = np.where(nt == "glutamate", 1, np.where(np.isin(nt, ("gaba", "acetylcholine")), -1, 0))
-        # naive MBON population rates per class × proximity bin, from never-jump approaches (TRAIN seeds ≥ 850,000, never reused)
-        runs = [mb_drive.never_jump_views(s) for s in seedsets.train_seeds(850_000, BATCH)]
+        # What do a naive brain's MBONs do in each class × proximity bin? Measured while the naive fly really plays (no
+        # dopamine, no plasticity, no gain modulation) on TRAIN seeds ≥ 850,000 that nothing else uses — a first version
+        # replayed never-jump approaches instead and under-estimated the rates during play, so the naive gain was not G.
         net = LIFNetwork(conn, p, batch_size=BATCH, device=args.device, chunk_steps=10)
-        drive = PoissonDrive(np.concatenate([ix["LC4"], ix["LPLC2"], ctx]), BATCH, p.dt_ms, device=args.device)
+        naive = Learner(conn, net, kc=ix["KC"], mbon=ix["MBON"], pam=ix["PAM"], ppl1=ix["PPL1"], context_vpns=ctx, plasticity=plasticity,
+                        dopamine=da_burst.chosen_dopamine(), context=context, da_mode="none")
+        naive.rule.enabled = False
+        drive = PoissonDrive(np.concatenate([ix["LC4"], ix["LPLC2"], naive.extra_neurons]), BATCH, p.dt_ms, device=args.device)
         net.set_drive(drive)
-        drive.set_seeds(np.arange(BATCH) + 97)
-        spikes, frames = np.zeros((N_CONTEXTS, 2)), np.zeros(N_CONTEXTS)
-        for f in range(max(len(r) for r in runs)):
-            rates, bins = np.zeros((len(ix["LC4"]) + len(ix["LPLC2"]) + len(ctx), BATCH)), np.full(BATCH, -1)
-            for col, run in enumerate(runs):
-                if f < len(run):
-                    typ, theta, theta_dot = run[f]
-                    lc4, lplc2 = population_rates(theta, theta_dot, FROZEN)
-                    rates[: len(ix["LC4"]), col], rates[len(ix["LC4"]) : len(ix["LC4"]) + len(ix["LPLC2"]), col] = float(lc4), float(lplc2)
-                    rates[len(ix["LC4"]) + len(ix["LPLC2"]) :, col] = context_rates(len(ctx), typ, theta, context)
-                    bins[col] = context_index(typ, theta)
-            drive.set_rates(rates)
-            mb = net.run(round(BIO_MS_PER_FRAME / p.dt_ms), record=None, watch=mbon_sorted).watch_counts  # [n_mbon, B]
-            for col in np.flatnonzero(bins >= 0):
-                spikes[bins[col]] += [mb[valence > 0, col].sum(), mb[valence < 0, col].sum()]
-                frames[bins[col]] += 1
+        spikes, frames, inner = np.zeros((N_CONTEXTS, 2)), np.zeros(N_CONTEXTS), naive.frame
+
+        def record(watch_counts) -> None:
+            mb = np.asarray(watch_counts)[naive.rule._sl[1]]  # [n_mbon, B], rows in the order of np.sort(MBON)
+            for col in np.flatnonzero(naive._ctx_now >= 0):
+                spikes[naive._ctx_now[col]] += [mb[valence > 0, col].sum(), mb[valence < 0, col].sum()]
+                frames[naive._ctx_now[col]] += 1
+            inner(watch_counts)
+
+        naive.frame = record
+        play_games(net, drive, len(ix["LC4"]), len(ix["LPLC2"]), ix["GF"], list(seedsets.train_seeds(850_000, BATCH)), looming=FROZEN, noise_seed=99, learner=naive)
         naive_hz = spikes / np.maximum(frames, 1)[:, None] * (1000.0 / BIO_MS_PER_FRAME)  # [9, 2]
-        for k in np.flatnonzero(frames == 0):  # class never met first (pterodactyls): mean of the other classes, same proximity
+        for k in np.flatnonzero(frames == 0):  # a bin that never occurred (pterodactyls are rare): mean of the other classes, same proximity
             same = [j for j in range(N_CONTEXTS) if j % 3 == k % 3 and frames[j] > 0]
             naive_hz[k] = naive_hz[same].mean(axis=0) if same else 0.0
         h2 = {"sensory_gain": SensoryGainParams(), "mbon_valence": valence, "naive_mbon_hz": naive_hz}
         print(f"[h2] avoidance-type MBONs {int((valence > 0).sum())}, approach-type {int((valence < 0).sum())}; naive summed rates per context "
-              f"(Hz) avoidance {np.round(naive_hz[:, 0], 1).tolist()} approach {np.round(naive_hz[:, 1], 1).tolist()}", flush=True)
-        del net, drive
+              f"(Hz) avoidance {np.round(naive_hz[:, 0], 1).tolist()} approach {np.round(naive_hz[:, 1], 1).tolist()}; frames per bin {frames.astype(int).tolist()}", flush=True)
+        del net, drive, naive
         torch.cuda.empty_cache()
 
     def build(da_mode: str):
@@ -208,6 +207,7 @@ def main() -> int:
         out = {k: s[k] for k in KEEP}
         if args.hypothesis == "h2":
             out["mean_gain_octaves_with_obstacle_in_view"] = learner.gain_log_sum / max(1, learner.gain_log_n)
+            learner.gain_log_sum, learner.gain_log_n = 0.0, 0
         return out
 
     result: dict = {"hypothesis": args.hypothesis, "pilot": args.pilot,
@@ -234,9 +234,19 @@ def main() -> int:
             gains = learner.rule.gains.detach().cpu().numpy()
             entry = {"generation": gen, **gain_stats(gains), "rewards_so_far": learner.rewards, "punishments_so_far": learner.punishments,
                      "shuffled_bursts_so_far": learner.shuffled_bursts, "spike_totals_so_far": dict(learner.spike_totals)}
+            if args.hypothesis == "h2" and gen > 0:
+                # mean gain shift while this generation trained (in the pilot, where the synapses barely move, this is the
+                # neutrality check of the H2 mapping: a naive brain must play at G, i.e. ≈ 0 octaves)
+                entry["mean_gain_octaves_while_training"] = learner.gain_log_sum / max(1, learner.gain_log_n)
+                learner.gain_log_sum, learner.gain_log_n = 0.0, 0
             # shuffled_da: generation 0 is the same brain as normal generation 0; only its last generation is evaluated
             if not args.pilot and ((cond == "normal" and evaluated(gen, generations)) or gen == generations):
                 entry["heldout"] = evaluate(net, drive, learner)
+            if args.pilot and args.hypothesis == "h2" and gen == 0:
+                # neutrality check of the H2 mapping on DEV seeds: a naive brain must play at G (|shift| ≤ 0.05 octaves).
+                # Only the gain shift is kept — the pilot does not look at scores.
+                entry["naive_gain_octaves_dev"] = evaluate(net, drive, learner)["mean_gain_octaves_with_obstacle_in_view"]
+                print(f"[pilot] naive H2 brain on DEV seeds: mean gain shift {entry['naive_gain_octaves_dev']:+.3f} octaves", flush=True)
             np.savez_compressed(checkpoint_dir(name) / f"{cond}_gen{gen:02d}.npz", **learner.rule.state())
             entry["wall_s"] = time.time() - t0
             curve.append(entry)
@@ -244,7 +254,9 @@ def main() -> int:
             print(f"[{cond}] gen {gen}: " + (f"score {ev['score_stats']['mean']:.1f} (median {ev['score_stats']['median']:.0f}), cleared "
                   f"{ev['cleared_stats']['mean']:.2f}; " if ev else "") + f"gains changed {entry['fraction_of_gains_changed']:.2%}, at g_min "
                   f"{entry['fraction_at_g_min']:.2%}, top-1% depression {entry['top1pct_mean_depression']:.3f}; spikes {entry['spike_totals_so_far']}; "
-                  f"R {learner.rewards} P {learner.punishments} S {learner.shuffled_bursts}; {entry['wall_s']:.0f} s", flush=True)
+                  f"R {learner.rewards} P {learner.punishments} S {learner.shuffled_bursts}"
+                  + (f"; gain while training {entry['mean_gain_octaves_while_training']:+.3f} oct" if "mean_gain_octaves_while_training" in entry else "")
+                  + f"; {entry['wall_s']:.0f} s", flush=True)
             # not resumable, but a crash late in the run must not lose the generations already measured
             (checkpoint_dir(name) / "partial.json").write_text(json.dumps(result | {"conditions": result["conditions"] | {cond: curve}}), encoding="utf-8")
         result["conditions"][cond] = curve
@@ -350,6 +362,10 @@ def render_report(r: dict) -> str:
     lines += ["", f"**Generation {last['generation']} vs. generation 0 (same held-out seeds and noise):** Δ score = {a.mean() - b.mean():+.1f} "
                   f"(paired 95% CI [{pc['mean_diff_ci95'][0]:+.1f}, {pc['mean_diff_ci95'][1]:+.1f}], Wilcoxon p = {pc['wilcoxon_p']:.2g}). "
                   f"Dopamine events during training: {last['rewards_so_far']} rewards, {last['punishments_so_far']} punishments."]
+    same = [f"generation {c['generation']}: {int((np.array(c['heldout']['score']) == a).sum())}" for c in normal[:-1]]
+    same += [f"{cond}: {int((np.array(c['heldout']['score']) == a).sum())}" for cond in ("shuffled_da", "random_plasticity")
+             for c in r["conditions"].get(cond, []) if "heldout" in c]
+    lines.append(f"Held-out games with exactly the same score as in generation {last['generation']} (of {len(a)}): " + "; ".join(same) + ".")
     verdicts = [pc["mean_diff_ci95"][0] > 0]
     for cond in ("shuffled_da", "random_plasticity"):
         ctrl = [c for c in r["conditions"].get(cond, []) if "heldout" in c]
