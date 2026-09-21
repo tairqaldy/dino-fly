@@ -1,6 +1,7 @@
 import type { LeaderboardUpdate } from "@dino-fly/protocol";
 import { marked } from "marked";
 import { useEffect, useState } from "react";
+import { Fly3D, type FlyAction, type FlyMood } from "../components/Fly3D.js";
 import { api } from "../lib/api.js";
 import type { FeedSnapshot, FlyFeed } from "../lib/feed.js";
 
@@ -81,12 +82,37 @@ export function Research() {
 
 export function Lab({ feed, control }: { feed: FeedSnapshot; control: FlyFeed }) {
   const [seed, setSeed] = useState(1_000_000);
+  const [flyAction, setFlyAction] = useState<FlyAction>("idle");
+  const [flyMood, setFlyMood] = useState<FlyMood>("neutral");
   return (
     <section>
       <h1>
         Lab <span className={feed.online ? "dot on" : "dot"} />
       </h1>
       <p className="lede">Local controls for the brain worker. Commands travel over the same WebSocket as the feed.</p>
+
+      <h2>Fly animation preview</h2>
+      <div className="play-grid">
+        <div className="row">
+          {(["idle", "jump", "duck"] as const).map((a) => (
+            <button key={a} type="button" onClick={() => setFlyAction(a)} className={a === flyAction ? "" : "ghost"}>
+              {a}
+            </button>
+          ))}
+          {(["neutral", "win", "lose"] as const).map((m) => (
+            <button key={m} type="button" onClick={() => setFlyMood(m === flyMood ? "neutral" : m)} className={m === flyMood ? "" : "ghost"}>
+              {m}
+            </button>
+          ))}
+        </div>
+        <aside className="fly-desk">
+          <Fly3D action={flyAction} mood={flyMood} />
+          <p className="hint">
+            {flyAction} · {flyMood}
+          </p>
+        </aside>
+      </div>
+
       <div className="row">
         <button type="button" onClick={() => control.send({ command: "start" })}>
           ▶ run

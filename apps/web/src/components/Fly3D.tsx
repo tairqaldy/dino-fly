@@ -229,6 +229,9 @@ export function Fly3D({ action, mood, className }: { action: FlyAction; mood: Fl
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
+      // redraw right away: in a background tab requestAnimationFrame is frozen, and the first layout often
+      // happens after this effect ran — without this the panel would stay empty until the tab is focused
+      renderer.render(scene, camera);
     };
     resize();
     const ro = new ResizeObserver(resize);
