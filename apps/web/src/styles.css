@@ -350,3 +350,32 @@ button.ghost {
   border: 2px solid var(--faint);
   color: inherit;
 }
+
+/* --- two screens: the fly on top, you below --- */
+.screens {
+  display: grid;
+  gap: 14px;
+}
+.screen {
+  border: 2px solid var(--ink);
+  padding: 8px;
+}
+.screen-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+}
+.screen-head small {
+  font-weight: normal;
+  opacity: 0.7;
+}
+.screen-head b {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+.screen .hint {
+  margin: 6px 2px 0;
+}

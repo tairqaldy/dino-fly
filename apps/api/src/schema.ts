@@ -56,6 +56,13 @@ export const dopamineEvents = pgTable("dopamine_events", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** Action logs of every recorded session. In Postgres because container disks do not survive a redeploy. */
+export const blobs = pgTable("blobs", {
+  key: text("key").primaryKey(),
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const hardwareDevices = pgTable("hardware_devices", {
   deviceId: text("device_id").primaryKey(),
   kind: text("kind").notNull(),

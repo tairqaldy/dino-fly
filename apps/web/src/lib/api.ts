@@ -49,6 +49,9 @@ export const api = {
     call<SubmitResult>("/api/runs", { method: "POST", body: JSON.stringify(run) }),
   leaderboard: () => call<LeaderboardUpdate>("/api/leaderboard"),
   ghost: (seed?: number) => call<Ghost>(`/api/ghost${seed === undefined ? "" : `?seed=${seed}`}`),
+  /** Recorded fly runs, newest first — replayed on the fly's screen whenever the live brain is offline. */
+  recentFlyRuns: async (limit = 10): Promise<Ghost[] | null> =>
+    (await call<{ runs: Ghost[] }>(`/api/fly/recent?limit=${limit}`))?.runs ?? null,
   /** How many validated human runs are in the teaching corpus so far (training from it is always manual). */
   status: () => call<{ flyOnline: boolean; teaching?: { runs: number; seeds: number } }>("/api/status"),
 };

@@ -103,6 +103,19 @@ export function createApp(deps: Deps): Hono {
     return c.json({ seed: best.seed, generation: best.generation, score: best.score, actions: (JSON.parse(blob) as { actions: unknown }).actions });
   });
 
+  // Recorded fly runs, newest first: the public page replays these so the fly's screen is never empty.
+  app.get("/api/fly/recent", async (c) => {
+    const limit = Math.min(Math.max(Number(c.req.query("limit") ?? 10) || 10, 1), 50);
+    const rows = await deps.repo.recentFlyRuns(limit);
+    const runs = [];
+    for (const r of rows) {
+      const blob = await deps.blobs.get(r.actionLogKey);
+      if (!blob) continue;
+      runs.push({ seed: r.seed, generation: r.generation, score: r.score, actions: (JSON.parse(blob) as { actions: unknown }).actions });
+    }
+    return c.json({ runs });
+  });
+
   return app;
 }
 

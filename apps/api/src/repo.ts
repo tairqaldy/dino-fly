@@ -7,7 +7,7 @@ import { dirname, join } from "node:path";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import type pg from "pg";
-import { brains, dopamineEvents, generations, hardwareDevices, runs } from "./schema.js";
+import { blobs, brains, dopamineEvents, generations, hardwareDevices, runs } from "./schema.js";
 
 export interface StoredRun {
   agentType: "human" | "fly" | "ghost";
@@ -31,6 +31,8 @@ export interface Repo {
   humanScores(): Promise<{ name: string; score: number }[]>;
   flyBestPerGeneration(): Promise<{ generation: number; bestScore: number }[]>;
   bestFlyRun(seed?: number): Promise<{ seed: number; generation: number; score: number; actionLogKey: string } | null>;
+  /** Newest fly runs, so the public page can keep replaying real runs while the brain is offline. */
+  recentFlyRuns(limit: number): Promise<{ seed: number; generation: number; score: number; actionLogKey: string }[]>;
   humanRank(score: number): Promise<number>;
   /** Validated human runs (newest first) for crowd teaching: metadata only, the action log is fetched by key. */
   listHumanRuns(limit: number): Promise<{ seed: number; score: number; frames: number; actionLogKey: string }[]>;
@@ -92,6 +94,21 @@ export class R2BlobStore implements BlobStore {
   }
 }
 
+/** Action logs in Postgres: the container disk is wiped on every deploy, and R2 is optional. */
+export class PgBlobStore implements BlobStore {
+  private readonly db: NodePgDatabase;
+  constructor(pool: pg.Pool) {
+    this.db = drizzle(pool);
+  }
+  async put(key: string, body: string): Promise<void> {
+    await this.db.insert(blobs).values({ key, body }).onConflictDoUpdate({ target: blobs.key, set: { body } });
+  }
+  async get(key: string): Promise<string | null> {
+    const [row] = await this.db.select({ body: blobs.body }).from(blobs).where(eq(blobs.key, key)).limit(1);
+    return row?.body ?? null;
+  }
+}
+
 export class MemoryBlobStore implements BlobStore {
   readonly data = new Map<string, string>();
   async put(key: string, body: string): Promise<void> {
@@ -137,6 +154,13 @@ export class MemoryRepo implements Repo {
       .slice(-limit)
       .reverse()
       .map((r) => ({ seed: r.seed, score: r.score, frames: r.frames, actionLogKey: r.actionLogKey }));
+  }
+  async recentFlyRuns(limit: number) {
+    return this.runs
+      .filter((r) => r.agentType === "fly")
+      .slice(-limit)
+      .reverse()
+      .map((r) => ({ seed: r.seed, generation: r.generation ?? 0, score: r.score, actionLogKey: r.actionLogKey }));
   }
   async countHumanRuns() {
     const valid = this.runs.filter((r) => r.agentType === "human" && r.validated);
@@ -241,6 +265,17 @@ export class PgRepo implements Repo {
       .where(and(eq(runs.agentType, "human"), eq(runs.validated, true)))
       .orderBy(desc(runs.id))
       .limit(limit);
+  }
+
+  async recentFlyRuns(limit: number) {
+    const rows = await this.db
+      .select({ seed: runs.seed, generation: generations.genNumber, score: runs.score, actionLogKey: runs.actionLogUrl })
+      .from(runs)
+      .leftJoin(generations, eq(runs.generationId, generations.id))
+      .where(eq(runs.agentType, "fly"))
+      .orderBy(desc(runs.id))
+      .limit(limit);
+    return rows.map((r) => ({ ...r, generation: r.generation ?? 0 }));
   }
 
   async countHumanRuns() {

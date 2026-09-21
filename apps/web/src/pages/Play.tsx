@@ -1,12 +1,13 @@
-import { createInitialState, type Input } from "@dino-fly/dino-core";
+import { createInitialState, type GameState, type Input, score as scoreOf } from "@dino-fly/dino-core";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Fly3D, type FlyAction, type FlyMood } from "../components/Fly3D.js";
 import { GameCanvas } from "../components/GameCanvas.js";
-import { Onboarding, OnboardingReplayButton } from "../components/Onboarding.js";
+import { NameGate, Onboarding, OnboardingReplayButton } from "../components/Onboarding.js";
 import { api, bundledGhosts, type Ghost, type SubmitResult } from "../lib/api.js";
 import type { FeedSnapshot } from "../lib/feed.js";
 import { applyPoseAction, type PoseTrackerHandle, startPoseTracker } from "../lib/pose.js";
 import { FixedStep, RaceSession } from "../lib/race.js";
+import { FlyReplay } from "../lib/replay.js";
 
 type Phase = "idle" | "running" | "over";
 type PoseStatus = { phase: "off" | "loading" | "calibrating" | "tracking" | "error"; progress?: number; message?: string };
@@ -22,16 +23,35 @@ export function Play({ feed }: { feed: FeedSnapshot }) {
     }
   });
   const [outcome, setOutcome] = useState<{ score: number; flyScore: number | null; submit: SubmitResult | null } | null>(null);
-  const [flyAction, setFlyAction] = useState<FlyAction>("idle");
   const [flyMood, setFlyMood] = useState<FlyMood>("neutral");
   const [pose, setPose] = useState<PoseStatus>({ phase: "off" });
+  const [flyLabel, setFlyLabel] = useState<{ live: boolean; score: number }>({ live: false, score: 0 });
   const session = useRef<RaceSession | null>(null);
   const token = useRef<string | null>(null);
   const keys = useRef<Input>({ jump: false, duck: false });
   const tracker = useRef<PoseTrackerHandle | null>(null);
   const selfView = useRef<HTMLVideoElement | null>(null);
+  const replayer = useRef(new FlyReplay());
+  const flyNow = useRef<GameState>(IDLE);
+  const flyAction = useRef<FlyAction>("idle");
+  const [flyActionState, setFlyActionState] = useState<FlyAction>("idle");
   const phaseRef = useRef<Phase>("idle");
   phaseRef.current = phase;
+
+  // recorded fly runs keep the fly's screen alive whenever the live brain is not connected
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const bundled = await bundledGhosts();
+      const fresh = await api.recentFlyRuns(12);
+      const runs = [...(fresh ?? []), ...bundled];
+      if (!cancelled && runs.length > 0) replayer.current.setRuns(runs as Ghost[]);
+    };
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const start = useCallback(async () => {
     const started = await api.startRun();
@@ -58,7 +78,6 @@ export function Play({ feed }: { feed: FeedSnapshot }) {
     if (!s) return;
     const r = s.result();
     setPhase("over");
-    setFlyAction("idle");
     // the fly celebrates when it beat you on the same obstacles, and cries when it did not
     setFlyMood(r.flyScore === null ? "neutral" : r.flyScore > r.score ? "win" : "lose");
     try {
@@ -72,39 +91,38 @@ export function Play({ feed }: { feed: FeedSnapshot }) {
     setOutcome({ score: r.score, flyScore: r.flyScore, submit });
   }, [name]);
 
-  // 60 Hz fixed-step loop
+  // one 60 Hz clock drives both screens: the human's game and the fly's (live feed or recorded run)
   useEffect(() => {
-    if (phase !== "running") return;
     const clock = new FixedStep();
     let last = performance.now();
     let raf = 0;
     const loop = (now: number) => {
-      const s = session.current;
-      if (!s) return;
-      for (let n = clock.ticks(now - last); n > 0 && !s.over; n--) s.tick(keys.current);
-      last = now;
-      // drive the 3D fly from the ghost: exactly the key presses the fly's own motor transducer made
-      const g = s.ghost;
-      setFlyAction(g ? (g.jumping ? "jump" : g.ducking ? "duck" : "idle") : "idle");
-      if (s.over) {
-        void finish();
-        return;
-      }
       raf = requestAnimationFrame(loop);
+      const ticks = clock.ticks(now - last);
+      last = now;
+      if (ticks === 0) return;
+      const s = session.current;
+      for (let n = ticks; n > 0; n--) {
+        if (s && phaseRef.current === "running" && !s.over) s.tick(keys.current);
+        if (!feed.state) replayer.current.tick();
+      }
+      const fly = feed.state ?? (replayer.current.hasRuns ? replayer.current.state : null);
+      flyNow.current = fly ?? IDLE;
+      const action: FlyAction = fly ? (fly.jumping ? "jump" : fly.ducking ? "duck" : "idle") : "idle";
+      if (action !== flyAction.current) {
+        flyAction.current = action;
+        setFlyActionState(action);
+      }
+      setFlyLabel((prev) => {
+        const live = Boolean(feed.state);
+        const sc = fly ? scoreOf(fly) : 0;
+        return prev.live === live && prev.score === sc ? prev : { live, score: sc };
+      });
+      if (s && phaseRef.current === "running" && s.over) void finish();
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [phase, finish]);
-
-  // when nobody is racing, the little fly mirrors the live brain: a Giant Fiber spike presses ↑
-  useEffect(() => {
-    if (phase === "running") return;
-    if (feed.frame && feed.frame.gf > 0) {
-      setFlyAction("jump");
-      const id = setTimeout(() => setFlyAction("idle"), 200);
-      return () => clearTimeout(id);
-    }
-  }, [feed.frame, phase]);
+  }, [feed.state, finish]);
 
   // keyboard + touch
   useEffect(() => {
@@ -169,10 +187,11 @@ export function Play({ feed }: { feed: FeedSnapshot }) {
     if (down && phase !== "running") void start();
   };
 
-  const getState = useCallback(() => {
-    const s = session.current;
-    return s ? { state: s.human, options: { ghost: s.ghost, label: "YOU", ghostLabel: "FLY" } } : { state: IDLE, options: { label: "YOU" } };
-  }, []);
+  const humanState = useCallback(
+    () => ({ state: session.current?.human ?? IDLE, options: { label: (name || "YOU").toUpperCase() } }),
+    [name],
+  );
+  const flyField = useCallback(() => ({ state: flyNow.current, options: { accentDino: true, label: `FLY${feed.stats ? ` · GEN ${feed.stats.generation}` : ""}` } }), [feed.stats]);
 
   const poseLabel =
     pose.phase === "loading"
@@ -187,85 +206,96 @@ export function Play({ feed }: { feed: FeedSnapshot }) {
 
   return (
     <section>
-      <Onboarding />
+      <Onboarding name={name} onName={setName} />
+      <NameGate name={name} onName={setName} />
       <h1>You vs. a fruit-fly brain</h1>
       <p className="lede">
-        The orange dino is driven by the complete <em>Drosophila</em> connectome — 138,639 spiking neurons. It sees each cactus as a
-        looming object and jumps when its Giant Fiber escape neuron fires. No neural network was trained on top of it.
+        Two screens, the same game. On top the <em>Drosophila</em> connectome plays — 138,639 spiking neurons, jumping when its
+        Giant Fiber escape neuron fires. Below, you.
       </p>
 
-      <div className="play-grid">
-        <div
-          className="stage"
-          onTouchStart={touch(true)}
-          onTouchEnd={touch(false)}
-          onMouseDown={touch(true)}
-          onMouseUp={touch(false)}
-          role="application"
-          aria-label="Dino game. Space or tap to jump, arrow down or tap the left edge to duck."
-        >
-          <GameCanvas state={null} getState={getState} />
-          {phase !== "running" && (
-            <div className="overlay">
-              {phase === "idle" ? <p>press SPACE or tap to run</p> : null}
-              {phase === "over" && outcome ? (
-                <p>
-                  you {outcome.score}
-                  {outcome.flyScore !== null ? ` — fly ${outcome.flyScore} on the same track` : ""}
-                  {outcome.submit?.accepted ? ` · rank #${outcome.submit.rank ?? "?"}` : ""}
-                  <br />
-                  <small>SPACE / tap to try again{outcome.submit && !outcome.submit.accepted ? ` · not recorded: ${outcome.submit.reason}` : ""}</small>
-                </p>
-              ) : null}
-            </div>
+      <div className="screens">
+        <div className="screen">
+          <div className="screen-head">
+            <span className="accent">FLY</span>
+            <span className={flyLabel.live ? "dot on" : "dot"} />
+            <small>{flyLabel.live ? "live brain — playing right now" : replayer.current.hasRuns ? "recorded run — the brain is offline" : "no runs yet"}</small>
+            <b className="accent">{flyLabel.score}</b>
+          </div>
+          <GameCanvas state={null} getState={flyField} />
+          {feed.frame ? (
+            <p className="hint">
+              Giant Fiber spikes this frame: <b className={feed.frame.gf > 0 ? "accent" : ""}>{feed.frame.gf}</b> · looming size θ ={" "}
+              {feed.frame.theta.toFixed(1)}° · LPLC2 drive {feed.frame.rates[1].toFixed(2)} Hz · {feed.framesPerSecond.toFixed(0)} fps
+            </p>
+          ) : (
+            <p className="hint">Recorded runs are replayed by the same deterministic engine that validates the leaderboard.</p>
           )}
         </div>
 
+        <div className="screen">
+          <div className="screen-head">
+            <span>{(name || "YOU").toUpperCase()}</span>
+            <small>{phase === "running" ? "your run" : "press SPACE or tap"}</small>
+            <b>{session.current ? scoreOf(session.current.human) : 0}</b>
+          </div>
+          <div
+            className="stage"
+            onTouchStart={touch(true)}
+            onTouchEnd={touch(false)}
+            onMouseDown={touch(true)}
+            onMouseUp={touch(false)}
+            role="application"
+            aria-label="Dino game. Space or tap to jump, arrow down or tap the left edge to duck."
+          >
+            <GameCanvas state={null} getState={humanState} />
+            {phase !== "running" && (
+              <div className="overlay">
+                {phase === "idle" ? <p>press SPACE or tap to run</p> : null}
+                {phase === "over" && outcome ? (
+                  <p>
+                    you {outcome.score}
+                    {outcome.flyScore !== null ? ` — fly ${outcome.flyScore} on the same track` : ""}
+                    {outcome.submit?.accepted ? ` · rank #${outcome.submit.rank ?? "?"}` : ""}
+                    <br />
+                    <small>SPACE / tap to try again{outcome.submit && !outcome.submit.accepted ? ` · not recorded: ${outcome.submit.reason}` : ""}</small>
+                  </p>
+                ) : null}
+              </div>
+            )}
+          </div>
+          <p className="hint">jump: SPACE / ↑ / tap · duck: ↓ / tap left edge · your inputs are saved so the fly can be taught from them</p>
+        </div>
+      </div>
+
+      <div className="play-grid">
+        <div>
+          <div className="row">
+            <label>
+              name{" "}
+              <input value={name} maxLength={24} onChange={(e) => setName(e.target.value)} placeholder="anonymous" />
+            </label>
+            <OnboardingReplayButton />
+          </div>
+          <div className="row">
+            <button type="button" onClick={() => void toggleCamera()}>
+              {pose.phase !== "off" ? "stop camera" : "play with your body (camera)"}
+            </button>
+            <video ref={selfView} className={pose.phase === "off" ? "selfview hidden" : "selfview"} muted playsInline />
+            <span className="hint">{poseLabel || "everything stays on your machine — no video is uploaded"}</span>
+          </div>
+        </div>
         <aside className="fly-desk">
-          <Fly3D action={flyAction} mood={flyMood} />
+          <Fly3D action={flyActionState} mood={flyMood} />
           <p className="hint">
             {flyMood === "win" && phase === "over"
               ? "the fly beat you and is very pleased with itself"
               : flyMood === "lose" && phase === "over"
                 ? "the fly lost this one"
-                : "the fly at its keyboard: a leg presses ↑ the moment the Giant Fiber fires"}
+                : "a leg presses ↑ the moment the Giant Fiber fires"}
           </p>
         </aside>
       </div>
-
-      <div className="row">
-        <label>
-          name on the leaderboard{" "}
-          <input value={name} maxLength={24} onChange={(e) => setName(e.target.value)} placeholder="anonymous" />
-        </label>
-        <span className="hint">jump: SPACE / ↑ / tap · duck: ↓ / tap left edge</span>
-        <OnboardingReplayButton />
-      </div>
-
-      <div className="row">
-        <button type="button" onClick={() => void toggleCamera()}>
-          {tracker.current || pose.phase !== "off" ? "stop camera" : "play with your body (camera)"}
-        </button>
-        <video ref={selfView} className={pose.phase === "off" ? "selfview hidden" : "selfview"} muted playsInline />
-        {poseLabel ? <span className="hint">{poseLabel}</span> : <span className="hint">everything stays on your machine — no video is uploaded</span>}
-      </div>
-
-      <h2>
-        The fly, live <span className={feed.online ? "dot on" : "dot"} /> <small>{feed.online ? "brain online" : "brain offline — showing recorded runs only"}</small>
-      </h2>
-      {feed.state ? (
-        <>
-          <GameCanvas state={feed.state} options={{ accentDino: true, label: `GEN ${feed.stats?.generation ?? 0}` }} />
-          <p className="hint">
-            Giant Fiber spikes this frame: <b className={feed.frame && feed.frame.gf > 0 ? "accent" : ""}>{feed.frame?.gf ?? 0}</b> · looming size θ ={" "}
-            {feed.frame?.theta.toFixed(1)}° · LPLC2 drive {feed.frame?.rates[1].toFixed(2)} Hz · {feed.framesPerSecond.toFixed(0)} fps
-          </p>
-        </>
-      ) : (
-        <p className="hint">
-          The live fly runs on Tair&apos;s laptop GPU. When it is off, you still race its best recorded runs (the translucent ghost).
-        </p>
-      )}
     </section>
   );
 }
