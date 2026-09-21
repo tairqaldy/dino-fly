@@ -26,7 +26,8 @@ export function createApp(deps: Deps): Hono {
   app.use("*", cors({ origin: "*", allowMethods: ["GET", "POST", "OPTIONS"] }));
 
   app.get("/health", (c) => c.json({ ok: true, flyOnline: deps.flyOnline() }));
-  app.get("/api/status", (c) => c.json({ flyOnline: deps.flyOnline() }));
+  // The corpus grows on its own; nothing trains on it automatically — a new generation is always rolled out by hand.
+  app.get("/api/status", async (c) => c.json({ flyOnline: deps.flyOnline(), teaching: await deps.repo.countHumanRuns() }));
 
   app.post("/api/runs/start", (c) => {
     if (!startLimiter.allow(clientKey(c))) return c.json({ error: "rate limited" }, 429);

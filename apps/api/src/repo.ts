@@ -34,6 +34,8 @@ export interface Repo {
   humanRank(score: number): Promise<number>;
   /** Validated human runs (newest first) for crowd teaching: metadata only, the action log is fetched by key. */
   listHumanRuns(limit: number): Promise<{ seed: number; score: number; frames: number; actionLogKey: string }[]>;
+  /** How big the teaching corpus is. Collection is continuous; training from it is always a manual step. */
+  countHumanRuns(): Promise<{ runs: number; seeds: number }>;
   recordDopamine(e: { kind: "reward" | "punish"; magnitude: number; source: "game" | "human_button" | "hardware"; seed?: number; frame?: number }): Promise<void>;
   touchDevice(deviceId: string, kind: string, firmware?: string): Promise<void>;
 }
@@ -136,6 +138,10 @@ export class MemoryRepo implements Repo {
       .reverse()
       .map((r) => ({ seed: r.seed, score: r.score, frames: r.frames, actionLogKey: r.actionLogKey }));
   }
+  async countHumanRuns() {
+    const valid = this.runs.filter((r) => r.agentType === "human" && r.validated);
+    return { runs: valid.length, seeds: new Set(valid.map((r) => r.seed)).size };
+  }
   async recordDopamine(e: unknown) {
     this.dopamine.push(e);
   }
@@ -235,6 +241,14 @@ export class PgRepo implements Repo {
       .where(and(eq(runs.agentType, "human"), eq(runs.validated, true)))
       .orderBy(desc(runs.id))
       .limit(limit);
+  }
+
+  async countHumanRuns() {
+    const [row] = await this.db
+      .select({ runs: sql<number>`count(*)::int`, seeds: sql<number>`count(distinct ${runs.seed})::int` })
+      .from(runs)
+      .where(and(eq(runs.agentType, "human"), eq(runs.validated, true)));
+    return { runs: row?.runs ?? 0, seeds: row?.seeds ?? 0 };
   }
 
   async recordDopamine(e: { kind: "reward" | "punish"; magnitude: number; source: "game" | "human_button" | "hardware"; seed?: number; frame?: number }) {

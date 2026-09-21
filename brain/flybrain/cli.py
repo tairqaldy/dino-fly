@@ -52,6 +52,34 @@ def worker(
     worker_main(host=host, port=port, api=api, token=token, device=device, connectome=connectome)
 
 
+@app.command("crowd-fetch")
+def crowd_fetch(
+    api: str = typer.Option("https://api-production-dad9.up.railway.app", help="Public API base URL."),
+    limit: int = typer.Option(5000, help="How many of the newest validated human runs to fetch."),
+) -> None:
+    """Download the human teaching corpus (metadata + action logs) into the local cache.
+
+    Collection happens by itself while people play; this only copies it to the GPU machine. Training a new
+    generation from it is a separate, explicitly manual step (`python -m experiments.crowd_teaching --train`).
+    """
+    import json
+    import urllib.request
+
+    from flybrain.config import cache_dir
+
+    url = f"{api.rstrip('/')}/api/runs/human?limit={int(limit)}"
+    with urllib.request.urlopen(url, timeout=60) as r:
+        payload = json.loads(r.read().decode("utf-8"))
+    runs = payload.get("runs", [])
+    out = cache_dir() / "human_runs.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps({"source": url, "runs": runs}, indent=1) + "\n", encoding="utf-8")
+    seeds = len({r["seed"] for r in runs})
+    print(f"[crowd] {len(runs)} validated human runs on {seeds} seeds → {out}")
+    print("[crowd] nothing is trained automatically: run `python -m experiments.crowd_teaching` to see the corpus,")
+    print("        and `--train --punishment tail|none` when you decide to roll out a new generation.")
+
+
 @app.command("neurons-doc")
 def neurons_doc(
     check: bool = typer.Option(False, "--check", help="Fail if docs/NEURONS.md is out of date."),

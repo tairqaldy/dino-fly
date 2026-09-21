@@ -1,18 +1,25 @@
 # Deployment
 
-Three places: the **API** (Railway: Node + Postgres), the **static web app** (Cloudflare Pages or GitHub Pages) and
-the **brain worker** (Tair's laptop, the only machine with a GPU). The laptop never accepts inbound connections: the
-worker dials out to the API. When the laptop is off the public site keeps working in *ghost mode* (recorded fly runs).
+Three places: the **API** (Railway: Node + Postgres + WebSocket hub), the **static web app** (Vercel, mirrored on
+GitHub Pages) and the **brain worker** (Tair's laptop, the only machine with a GPU). The laptop never accepts inbound
+connections: the worker dials out to the API. When the laptop is off the public site keeps working in *ghost mode*
+(recorded fly runs).
 
-## Current state (2026-09-21)
+## Current state (2026-09-21, all live)
 
 | Piece | State | URL / note |
 |---|---|---|
-| Web app | **deployed** by GitHub Actions (`.github/workflows/pages.yml`) | <https://tairqaldy.github.io/dino-fly/> |
-| Railway project `dino-fly` | created; **Postgres running**; `api` service created with `WORKER_TOKEN`, `RUN_TOKEN_SECRET`, `DATABASE_URL`, `PORT`, `NODE_ENV` set | <https://railway.com/project/84090b88-674e-4b22-8a63-fb34c0137d6e> |
-| API deploy | **FAILED at "scheduling build" with no build log** (three attempts via `railway up`, the last on 2026-09-21 03:48 +05; `railway logs --build` shows nothing more). The same image builds and runs locally against Postgres. Looks like an account/plan-level refusal rather than a code problem — see "Finish the API deploy" below | intended URL: <https://api-production-dad9.up.railway.app> |
-| Cloudflare Pages / R2 / Turnstile / Tunnel | not set up (no Cloudflare credentials on this machine) | steps below |
-| GitHub Pages build variables | `VITE_API_URL`, `VITE_FLY_WS` point at the Railway URL above | `gh variable list` |
+| Web app (primary) | **deployed by Vercel** from GitHub on every push to `main`; Vercel Auth off so it is public | <https://flybrain-dino.vercel.app> |
+| Web app (mirror) | **deployed** by GitHub Actions (`.github/workflows/pages.yml`) | <https://tairqaldy.github.io/dino-fly/> |
+| API + Postgres | **deployed and healthy** on Railway (`/health` → 200) | <https://api-production-dad9.up.railway.app> |
+| Railway project `dino-fly` | Postgres + `api` service, `WORKER_TOKEN`, `RUN_TOKEN_SECRET`, `DATABASE_URL`, `PORT`, `NODE_ENV` set | <https://railway.com/project/84090b88-674e-4b22-8a63-fb34c0137d6e> |
+| Build vars | `VITE_API_URL`, `VITE_FLY_WS` on both Vercel and GitHub Pages point at the Railway URL | `gh variable list` |
+| Cloudflare Pages / R2 / Turnstile | not set up and no longer needed (Vercel + Railway + Postgres cover it); R2 stays optional for action logs | — |
+
+**Why the API deploy used to fail.** Railway ignored `railway.toml`: config-as-code is deprecated there and services
+created after 2026-08-28 cannot opt into it, so `railway up` always fell back to the Railpack builder, which stopped
+with *"No start command detected"* — the build log was only visible in the dashboard, not in the CLI. The fix is a
+`start` script in the **root** `package.json`; `infra/api.Dockerfile` is kept for local/other hosts (D23).
 
 The generated `WORKER_TOKEN` / `RUN_TOKEN_SECRET` are in the git-ignored `.env` at the repository root.
 
@@ -51,14 +58,20 @@ Variables (`railway variables --service api`):
 | `PORT` | `8787` |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` | optional; without them logs go to the container disk (ephemeral on Railway!) |
 
-**Finish the API deploy.** Open the build-log link printed by `railway up` in the dashboard — the CLI shows nothing
-after "scheduling build". If it is a plan limit, upgrade or free a service slot and run `railway up --service api`
-again; no code change should be needed (`docker build -f infra/api.Dockerfile .` succeeds locally).
+**Redeploying the API:** `railway up --service api --ci` from the repository root. Railpack builds the pnpm
+workspace and runs the root `start` script, which applies migrations and then starts the server. If a build ever
+fails again, the *useful* log is in the Railway dashboard (the CLI stops at "scheduling build").
 
 ## 3. Web app
 
-**GitHub Pages (live):** every push to `main` that touches `apps/web`, `packages` or `docs` rebuilds and deploys.
-Repository variables `VITE_API_URL` and `VITE_FLY_WS` are baked in at build time.
+**Vercel (primary, live):** project `dino-fly` in team `tairqaldy-projects`, connected to the GitHub repo, root
+directory `apps/web`, install `cd ../.. && pnpm install --frozen-lockfile`, build `pnpm run build`, output `dist`.
+Every push to `main` deploys automatically; `VITE_API_URL` / `VITE_FLY_WS` are project environment variables.
+Vercel Authentication is **off** (otherwise visitors would hit a login wall). A custom domain would have to be
+bought first; `flybrain-dino.vercel.app` is the free one this project owns.
+
+**GitHub Pages (mirror, live):** every push to `main` that touches `apps/web`, `packages` or `docs` rebuilds and
+deploys. Repository variables `VITE_API_URL` and `VITE_FLY_WS` are baked in at build time.
 
 **Cloudflare Pages (documented target):**
 

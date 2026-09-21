@@ -6,8 +6,10 @@ import type { FeedSnapshot, FlyFeed } from "../lib/feed.js";
 
 export function Leaderboard({ feed }: { feed: FeedSnapshot }) {
   const [board, setBoard] = useState<LeaderboardUpdate | null>(null);
+  const [teaching, setTeaching] = useState<{ runs: number; seeds: number } | null>(null);
   useEffect(() => {
     void api.leaderboard().then(setBoard);
+    void api.status().then((s) => setTeaching(s?.teaching ?? null));
   }, []);
   const data = feed.leaderboard ?? board;
   if (!data) {
@@ -25,6 +27,13 @@ export function Leaderboard({ feed }: { feed: FeedSnapshot }) {
       {data.flyPercentile !== undefined && (
         <p className="headline">
           the fly beats <b className="accent">{data.flyPercentile.toFixed(1)}%</b> of human runs
+        </p>
+      )}
+      {teaching && (
+        <p className="hint">
+          Teaching corpus: <b>{teaching.runs}</b> validated human runs on <b>{teaching.seeds}</b> obstacle courses. Every run you
+          play is kept. Nothing trains on them automatically — a new generation of the fly is trained by hand and rolled out
+          with its own pre-registered evaluation.
         </p>
       )}
       <div className="grid2">

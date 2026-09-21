@@ -11,8 +11,9 @@ dopamine-gated plasticity at Kenyon cell → mushroom-body output neuron synapse
 mappings are fixed, hand-written and documented, and every number below comes from a script in this repo — including
 the ones that are unflattering.
 
-**Play it:** <https://tairqaldy.github.io/dino-fly/> (race the fly's recorded runs; the live brain is online only while
-Tair's laptop is). **Read the research log:** [`docs/RESEARCH.md`](docs/RESEARCH.md).
+**Play it:** <https://flybrain-dino.vercel.app> (race the fly's recorded runs — or play with your body through the
+laptop camera; the live brain is online only while Tair's laptop is).
+**Read the research log:** [`docs/RESEARCH.md`](docs/RESEARCH.md).
 
 ## 30-second version of the results
 
@@ -62,8 +63,8 @@ game state ─► looming transducer ─► LPLC2 / LC4 Poisson drive ─► who
   Python port; `packages/dino-render` — own pixel art; `packages/protocol` — JSON-Schema message protocol.
 - `apps/web` — play vs. the fly, live brain map, leaderboard, research page; `apps/api` — scores validated by
   deterministic replay, leaderboard, ghosts, worker hub (Postgres).
-- `firmware/` — ESP32 stats display with reward/punish buttons, XIAO ESP32S3 pose camera *(both compile; not yet
-  tested on hardware)*; `brain/pose/` turns a camera into jump / duck input for the Play page.
+- `firmware/` — ESP32 stats display and XIAO ESP32S3 camera *(compile; kept for later, not needed to play — body
+  control runs in the browser on the laptop camera)*.
 - `docs/` — [ARCHITECTURE](docs/ARCHITECTURE.md) · [RESEARCH](docs/RESEARCH.md) · [NEURONS](docs/NEURONS.md) ·
   [DECISIONS](docs/DECISIONS.md) (incl. open questions and the forking-paths log) · [PROTOCOL](docs/PROTOCOL.md) ·
   [HARDWARE](docs/HARDWARE.md) · [DEPLOY](docs/DEPLOY.md) · [PROGRESS](docs/PROGRESS.md).
@@ -94,8 +95,8 @@ Full local + cloud setup: [`docs/DEPLOY.md`](docs/DEPLOY.md).
 | 2 Web dashboard, live brain map, worker | done (brain map v1 is group-level) |
 | 3 API, DB, replay validation, leaderboard | done locally; web deployed; **Railway API deploy blocked** (see DEPLOY.md) |
 | 4 Learning (KC→MBON plasticity) | measured, pre-registered: H1 (real wiring only) → no learning effect; H2 (model assumption) → score 90.6 → 160.3 but identical with shuffled dopamine → no learning effect; open decisions D13, D17 |
-| 5 Crowd teaching | implemented + unit-tested; **not yet measured** (needs human runs) |
-| 6 Hardware | firmware + pose pipeline written; both firmware projects compile with PlatformIO; **not yet tested on hardware** |
+| 5 Crowd teaching | **collecting**: every validated human run is stored; training a new generation from them is a deliberate manual step (D21) |
+| 6 Hardware | optional (D22): body control runs in the browser on the laptop camera. ESP32 firmware compiles but is **not part of the product** |
 | 7–8 Stretch, MaleCNS, v1.0 write-up | not started |
 
 ## How to cite / credits

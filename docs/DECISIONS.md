@@ -167,6 +167,31 @@ bursts that landed inside a running game ignited self-sustained Kenyon-cell voll
 moments (≈ 1 per 120 frames, magnitude uniform in [0.25, 1]) instead of after a cleared obstacle; the punishment stays
 after the crash, where it is in every condition. Decided on DEV / training seeds, before any held-out learning game.
 
+## D21 — Crowd teaching collects continuously, trains only by hand · decided (Tair, 2026-09-21)
+
+Every validated human run is stored as people play (`/api/runs`, counted in `/api/status`). Nothing trains on that
+corpus automatically: a new generation is produced deliberately on the GPU machine
+(`flybrain crowd-fetch` → `python -m experiments.crowd_teaching --train --punishment …`) and rolled out by hand.
+Rationale: a public learning loop that nobody watches can be poisoned, and every generation of this project is
+supposed to come with a pre-registered evaluation. The web app says so on the leaderboard page.
+
+## D22 — Hardware is optional; the camera runs in the browser · decided (Tair, 2026-09-21)
+
+The ESP32 stats display and the XIAO camera stay in the repository (they compile) but are not part of the product
+for now. Body control uses the laptop's own camera through MediaPipe Pose **in the browser** (`apps/web/src/lib/pose.ts`,
+a port of `brain/pose/pose_input.py` with the same thresholds); no local Python process and no board are involved,
+and no video leaves the machine. The Python pose script remains for the ESP32 route if the hardware is ever built.
+
+## D23 — Hosting: API on Railway, site on Vercel · decided (Tair, 2026-09-21)
+
+Railway never read `railway.toml`: config-as-code is deprecated there and services created after 2026-08-28 cannot
+opt in, so every `railway up` fell back to the Railpack builder, which aborted with "No start command detected".
+Fix: a `start` script in the **root** `package.json` (`pnpm --filter @dino-fly/api migrate && … start`), which
+Railpack finds. The API + Postgres + WebSocket hub therefore live on Railway; the static site is deployed by Vercel
+from GitHub on every push, at <https://flybrain-dino.vercel.app> (the GitHub Pages copy stays as a mirror).
+`dino-fly.vercel.app` and `dinofly.vercel.app` were already taken by other accounts. A real custom domain needs a
+purchase, which is Tair's to make.
+
 ## D19 — Learning-rate calibration and training budget · decided
 
 η is not given by the brief and no published number maps onto this model. It is set by a pilot through a synaptic

@@ -1,0 +1,26 @@
+{
+  "experiment": "crowd_teaching",
+  "collection": {
+    "runs": 0,
+    "distinct_seeds": 0,
+    "score_median": null,
+    "score_max": null,
+    "ready_to_train": false,
+    "minimum": {
+      "runs": 50,
+      "distinct_seeds": 10
+    }
+  },
+  "trained": false,
+  "note": "collection is continuous; training is a manual step (--train)",
+  "meta": {
+    "timestamp_utc": "2026-09-21T06:52:52+00:00",
+    "git_commit": "26a97415db55ee8e175d714e7d1b327131a91c82",
+    "git_dirty": true,
+    "python": "3.12.12",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "torch": "2.14.0+cu130",
+    "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+    "cuda": "13.0"
+  }
+}

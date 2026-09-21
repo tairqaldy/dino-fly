@@ -576,5 +576,9 @@ replay's punishment is a PPL1 burst inside a running game, which in this model c
 has to be checked (and probably moved) before the ablation is run on real data.
 
 <!-- BEGIN:crowd_teaching -->
-not yet measured
+**Collected so far: 0 validated human runs on 0 distinct seeds.** Collection runs by itself whenever anyone plays; a new generation of the fly is only ever trained by hand (`experiments/crowd_teaching.py --train`, DECISIONS.md D21). Threshold before training makes sense: 50 runs on 10 seeds → **keep collecting**.
+
+No generation has been trained from human data yet, so the crowd-teaching ablation is **not yet measured**.
+
+Source: `results/crowd_teaching.json`.
 <!-- END:crowd_teaching -->
