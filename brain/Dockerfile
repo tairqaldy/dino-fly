@@ -20,7 +20,7 @@ COPY --from=ghcr.io/astral-sh/uv:0.10.7 /uv /usr/local/bin/uv
 
 WORKDIR /app
 # dependencies first, so a code change does not re-download torch
-COPY pyproject.toml uv.lock ./
+COPY pyproject.toml uv.lock README.md ./
 RUN uv sync --extra cpu --locked --no-install-project
 COPY flybrain flybrain
 COPY experiments experiments

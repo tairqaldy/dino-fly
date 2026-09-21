@@ -192,6 +192,22 @@ from GitHub on every push, at <https://flybrain-dino.vercel.app> (the GitHub Pag
 `dino-fly.vercel.app` and `dinofly.vercel.app` were already taken by other accounts. A real custom domain needs a
 purchase, which is Tair's to make.
 
+## D24 — The brain is hosted, on CPU · decided (Tair, 2026-09-21)
+
+The public site should not depend on a laptop being awake. There is no GPU on Railway, but the active-set engine
+does not need one to *play*: on 8 CPU threads the full FlyWire 783 connectome runs at **~31 game frames per second**
+(0.24× real time in continuous simulation; a game only ever touches a few thousand neurons). So a `brain` service
+runs the identical engine on CPU, plays continuously and streams to the API hub; the GPU worker on the laptop is
+still what runs experiments, and it takes over the same hub slot whenever it connects.
+The fly's screen falls back to **replaying its own recorded runs** (same deterministic engine, labelled "recorded
+run") when no brain is connected — never a canned animation.
+
+## D25 — Every session is stored in Postgres · decided (Tair, 2026-09-21)
+
+Action logs used to go to the container disk, which Railway wipes on every deploy. They now live in the `blobs`
+table (migration `0001`), so each session — seed, the full input log, score, duration, the name the player entered —
+survives redeploys and is what the crowd-teaching corpus is made of. The name is asked once, on entry.
+
 ## D19 — Learning-rate calibration and training budget · decided
 
 η is not given by the brief and no published number maps onto this model. It is set by a pilot through a synaptic

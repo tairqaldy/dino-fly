@@ -41,6 +41,7 @@ class LiveFly(threading.Thread):
         self.stop_flag = False
         self.generation = 0
         self.games, self.best, self.jumps, self.deaths = 0, 0, 0, 0
+        self.frames_per_second = target_fps  # measured; a CPU brain is slower than the 60 Hz game clock
         self.recent: deque[int] = deque(maxlen=50)
         self.learning_curve: list[proto.LearningPoint] = []
         self.pending_dopamine: list[proto.DopamineEvent] = []
@@ -118,6 +119,8 @@ class LiveFly(threading.Thread):
                 spare = 1.0 / self.target_fps - (time.perf_counter() - t0)
                 if spare > 0:
                     time.sleep(spare)
+                # measured game speed, used to decide how many frames the public hub gets
+                self.frames_per_second = 1.0 / max(time.perf_counter() - t0, 1e-6)
             wall = max(time.perf_counter() - t_game, 1e-6)
             self.games += 1
             self.deaths += int(state.crashed)
@@ -200,8 +203,10 @@ async def serve(host: str, port: int, *, api: str | None, token: str | None, dev
             data = json.dumps(message)
             websockets.broadcast(clients, data)
             n += 1
-            # the public hub gets every third frame (~20 Hz) and all non-frame messages
-            if hub_clients and (message["type"] != "fly.frame" or n % 3 == 0):
+            # The public hub gets every frame while the brain is slower than the game's 60 Hz (the CPU service runs
+            # at ~33 game fps, and dropping two of every three frames there would look like a slideshow); a GPU
+            # worker that keeps up with real time still only needs every third frame.
+            if hub_clients and (message["type"] != "fly.frame" or fly.frames_per_second < 40 or n % 3 == 0):
                 websockets.broadcast(hub_clients, data)
 
     fly.start()

@@ -12,6 +12,7 @@ connections: the worker dials out to the API. When the laptop is off the public 
 | Web app (primary) | **deployed by Vercel** from GitHub on every push to `main`; Vercel Auth off so it is public | <https://flybrain-dino.vercel.app> |
 | Web app (mirror) | **deployed** by GitHub Actions (`.github/workflows/pages.yml`) | <https://tairqaldy.github.io/dino-fly/> |
 | API + Postgres | **deployed and healthy** on Railway (`/health` → 200) | <https://api-production-dad9.up.railway.app> |
+| Brain (CPU) | Railway service `brain`, built from `brain/Dockerfile`; plays continuously and streams to the API hub | no public URL (outbound only) |
 | Railway project `dino-fly` | Postgres + `api` service, `WORKER_TOKEN`, `RUN_TOKEN_SECRET`, `DATABASE_URL`, `PORT`, `NODE_ENV` set | <https://railway.com/project/84090b88-674e-4b22-8a63-fb34c0137d6e> |
 | Build vars | `VITE_API_URL`, `VITE_FLY_WS` on both Vercel and GitHub Pages point at the Railway URL | `gh variable list` |
 | Cloudflare Pages / R2 / Turnstile | not set up and no longer needed (Vercel + Railway + Postgres cover it); R2 stays optional for action logs | — |
@@ -57,6 +58,22 @@ Variables (`railway variables --service api`):
 | `NODE_ENV` | `production` |
 | `PORT` | `8787` |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` | optional; without them logs go to the container disk (ephemeral on Railway!) |
+
+**Redeploying the brain.** The CLI's `--service` flag does not change *what* is uploaded: `railway up` always sends
+the directory that contains the linked project, and the service's "Root Directory" setting is not applied to CLI
+uploads. So the brain is deployed from a copy of `brain/` alone, which puts its `Dockerfile` at the root of the build
+context (that is what makes Railway build a Dockerfile instead of guessing with Railpack):
+
+```bash
+tmp=$(mktemp -d) && tar -cf - --exclude='experiments/logs' --exclude='experiments/cache' --exclude='__pycache__' \
+    -C brain Dockerfile README.md pyproject.toml uv.lock flybrain experiments | tar -xf - -C "$tmp"
+cd "$tmp" && railway up --project 84090b88-674e-4b22-8a63-fb34c0137d6e --service brain --environment production --ci
+```
+
+It needs `WORKER_TOKEN` (same value as the API), `HUB_URL=wss://api-production-dad9.up.railway.app/worker` and
+`DINOFLY_DATA_DIR=/data`. On boot it downloads the two pinned FlyWire 783 files (~104 MB, SHA-256 verified); add a
+volume at `/data` to keep them across deploys. Measured throughput on 8 CPU threads: **~31 game frames per second**
+on the full connectome — about half of real-time — which is enough to stream a live game to the site.
 
 **Redeploying the API:** `railway up --service api --ci` from the repository root. Railpack builds the pnpm
 workspace and runs the root `start` script, which applies migrations and then starts the server. If a build ever
